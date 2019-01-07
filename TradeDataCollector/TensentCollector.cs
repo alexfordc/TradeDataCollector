@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace TradeDataCollector
 {
-    public abstract class BaseDataCollector
+    class TensentCollector
     {
-    
     }
 }

@@ -10,7 +10,7 @@ namespace TradeDataCollector
     {
         public DateTime DateTime;
         public float Price;
-        public double Size;
+        public int Volume;
         public double Amount;
         public char BuyOrSell;
     }

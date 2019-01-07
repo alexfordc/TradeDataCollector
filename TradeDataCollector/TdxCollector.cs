@@ -6,11 +6,7 @@ using System.Threading.Tasks;
 
 namespace TradeDataCollector
 {
-    public class Quote
+    class TdxCollector
     {
-        public float BidPrice;
-        public long BidVolume;
-        public float AskPrice;
-        public long AskVolume;
     }
 }
