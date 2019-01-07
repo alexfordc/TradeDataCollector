@@ -52,14 +52,13 @@ namespace TradeDataCollector
                 switch (gmTick.tradeType)
                 {
                     case 3:
-                    case 6:
-                    case 7:
                         aTick.BuyOrSell = 'B';
                         break;
                     case 4:
-                    case 5:
-                    case 8:
                         aTick.BuyOrSell = 'S';
+                        break;
+                    default:
+                        aTick.BuyOrSell = 'N';
                         break;
                 }
                 ret.Add(gmTick.symbol, aTick);
