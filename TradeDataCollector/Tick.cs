@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TradeDataCollector
 {
-    public class Class1
+    class Tick
     {
     }
 }
