@@ -46,7 +46,7 @@
   <ItemGroup>
     <Compile Include="Bar.cs" />
     <Compile Include="BaseCollector.cs" />
-    <Compile Include="FixedSizeTimeQueue.cs" />
+    <Compile Include="FixedSizeTradeQueue.cs" />
     <Compile Include="GMCollector.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Quote.cs" />

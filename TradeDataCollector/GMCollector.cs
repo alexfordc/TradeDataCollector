@@ -10,7 +10,7 @@ namespace TradeDataCollector
     {
         public GMCollector()
         {
-            GMApi.SetToken("dd16861071a1ae0b7050bf3a14d28f5a6eea6847");
+            GMApi.SetToken("48da7cef9d32b7f33bf043f493c3feec4a26958b");
         }
         public override Dictionary<string, Tick> Current(IEnumerable<string> symbols)
         {
@@ -20,7 +20,7 @@ namespace TradeDataCollector
             GMDataList<GMSDK.Tick> dataList = GMApi.Current(symbolString);
             if (dataList.status != 0)
             {
-                throw new Exception(this.getErrorMsg(dataList.status));
+                throw new Exception(this.GetErrorMsg(dataList.status));
             }
             foreach(GMSDK.Tick gmTick in dataList.data)
             {
@@ -39,6 +39,7 @@ namespace TradeDataCollector
                 int i = 0;
                 foreach(GMSDK.Quote gmQuote in gmTick.quotes)
                 {
+                    if (gmQuote == null) continue;
                     Quote aQuote = new Quote
                     {
                         BidPrice = gmQuote.bidPrice,
@@ -49,13 +50,14 @@ namespace TradeDataCollector
                     aTick.Quotes[i] = aQuote;
                     i++;
                 }
+ 
                 switch (gmTick.tradeType)
                 {
-                    case 3:
-                        aTick.BuyOrSell = 'B';
-                        break;
-                    case 4:
+                    case 7:
                         aTick.BuyOrSell = 'S';
+                        break;
+                    case 8:
+                        aTick.BuyOrSell = 'B';
                         break;
                     default:
                         aTick.BuyOrSell = 'N';
@@ -66,27 +68,27 @@ namespace TradeDataCollector
             return ret;
         }
 
-        public override List<Bar> HistoryBars(string symbol, int size, string startTime, string endTime)
+        public override List<Bar> HistoryBars(string symbol, int size, string startTime, string endTime="")
         {
             throw new NotImplementedException();
         }
 
-        public override List<Bar> HistoryBarsN(string symbol, int size, int n, string endTime)
+        public override List<Bar> HistoryBarsN(string symbol, int size, int n, string endTime="")
         {
             throw new NotImplementedException();
         }
 
-        public override List<Trade> HistoryTicks(string symbol, string startTime, string endTime)
+        public override List<Trade> HistoryTicks(string symbol, string startTime, string endTime="")
         {
             throw new NotImplementedException();
         }
 
-        public override List<Trade> HistoryTicksN(string symbol, int n, string endTime)
+        public override List<Trade> HistoryTicksN(string symbol, int n, string endTime="")
         {
             throw new NotImplementedException();
         }
 
-        private string getErrorMsg(int errorCode)
+        private string GetErrorMsg(int errorCode)
         {
             switch (errorCode)
             {

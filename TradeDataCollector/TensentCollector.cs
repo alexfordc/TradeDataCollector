@@ -56,51 +56,46 @@ namespace TradeDataCollector
                     UpperLimit = float.Parse(data[47]),
                     LowerLimit = float.Parse(data[48])
                 };
-                for (int k = 0; k < 5; k++) { 
+                for (int k = 0; k < 5; k++)
+                {
                     aTick.Quotes[k] = new Quote
                     {
-                        BidPrice = float.Parse(data[9+k*2]),
-                        BidVolume = long.Parse(data[10+k*2]) * 100,
-                        AskPrice = float.Parse(data[19+k*2]),
-                        AskVolume = long.Parse(data[20+k*2]) * 100
+                        BidPrice = float.Parse(data[9 + k * 2]),
+                        BidVolume = long.Parse(data[10 + k * 2]) * 100,
+                        AskPrice = float.Parse(data[19 + k * 2]),
+                        AskVolume = long.Parse(data[20 + k * 2]) * 100
                     };
                 }
-                string[] temp = data[35].Split('/');
-                aTick.CumVolume = double.Parse(temp[1]) * 100;
-                aTick.CumAmount = double.Parse(temp[2]);
-                string[] tradeStrings = data[29].Split('|');
-                List<Trade> lastTrades = new List<Trade>();
 
-                foreach(string tradeString in tradeStrings)
+                string[] tradeStrings = data[29].Split('|');
+                if (tradeStrings.Length < 1) continue;
+                FixedSizeTradeQueue tradeQueue;
+                if (!this.dictTradeCache.TryGetValue(symbol, out tradeQueue))
                 {
-                    temp = tradeString.Split('/');
+                    tradeQueue = new FixedSizeTradeQueue(30);
+                    this.dictTradeCache[symbol] = tradeQueue;
+                }
+                
+                for (int k = tradeStrings.Length - 1; k >= 0; k--)
+                {
+                    string[] temp = tradeStrings[k].Split('/');
                     Trade aTrade = new Trade
                     {
                         DateTime = DateTime.Today.Add(TimeSpan.Parse(temp[0])),
                         Price = float.Parse(temp[1]),
-                        Volume = int.Parse(temp[2]),
+                        Volume = int.Parse(temp[2])*100,
                         BuyOrSell = temp[3][0],
                         Amount = double.Parse(temp[4])
                     };
-                    lastTrades.Add(aTrade);
+                    tradeQueue.Add(aTrade);
                 }
-                if (lastTrades.Count>0) {
-                    aTick.Volume = lastTrades[0].Volume;
-                    aTick.Amount = lastTrades[0].Amount;
-                    aTick.BuyOrSell = lastTrades[0].BuyOrSell;
-                    aTick.DateTime=lastTrades[0].DateTime;
-                    FixedSizeTradeQueue tradeQueue;
-                    if (!this.dictTradeCache.TryGetValue(symbol,out tradeQueue))
-                    {
-                        tradeQueue=new FixedSizeTradeQueue(30);
-                        this.dictTradeCache[symbol] = tradeQueue;
-                    }
-                    
-                    foreach(Trade aTrade in lastTrades)
-                    {
-                        if (!tradeQueue.Add(aTrade)) break;
-                    }
-                }
+                Trade lastTrade = tradeQueue.LastTrade;
+                aTick.Volume = lastTrade.Volume;
+                aTick.Amount = lastTrade.Amount;
+                aTick.BuyOrSell = lastTrade.BuyOrSell;
+                aTick.DateTime = lastTrade.DateTime;
+                aTick.CumVolume = double.Parse(data[36]) * 100;
+                aTick.CumAmount = double.Parse(data[37]) *10000;
                 ret.Add(symbol, aTick);
                 i++;
             }
@@ -117,12 +112,33 @@ namespace TradeDataCollector
             throw new NotImplementedException();
         }
 
-        public override List<Trade> HistoryTicks(string symbol, string startTime, string endTime)
+        public override List<Trade> HistoryTicks(string symbol, string startTime, string endTime="")
         {
-            throw new NotImplementedException();
+            DateTime time1 = DateTime.Parse(startTime);
+            DateTime time2 = DateTime.Now;
+            if (endTime != "") time2 = DateTime.Parse(endTime);
+
+            FixedSizeTradeQueue tradeQueue;
+            if (!this.dictTradeCache.TryGetValue(symbol, out tradeQueue))
+            {
+                tradeQueue = new FixedSizeTradeQueue(30);
+                this.dictTradeCache[symbol] = tradeQueue;
+            }
+            List<Trade> ret = new List<Trade>();
+            if (time1 < tradeQueue.MinTime || time1 > tradeQueue.MaxTime)
+            {
+                //读取今天的tick
+            } else
+            {
+                foreach (Trade aTrade in tradeQueue.Values)
+                {
+                    if (aTrade.DateTime >= time1 && aTrade.DateTime <= time2) ret.Add(aTrade);
+                }
+            }
+            return ret;
         }
 
-        public override List<Trade> HistoryTicksN(string symbol, int n, string endTime)
+        public override List<Trade> HistoryTicksN(string symbol, int n, string endTime="")
         {
             throw new NotImplementedException();
         }
