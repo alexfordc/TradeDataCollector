@@ -12,7 +12,7 @@ namespace TradeDataCollector
         {
             GMApi.SetToken("dd16861071a1ae0b7050bf3a14d28f5a6eea6847");
         }
-        public override Dictionary<string, Tick> Current(List<string> symbols)
+        public override Dictionary<string, Tick> Current(IEnumerable<string> symbols)
         {
             Dictionary<string, Tick> ret = new Dictionary<string, Tick>();
             string symbolString = "";

@@ -8,13 +8,14 @@ namespace TradeDataCollector
     public class TensentCollector : BaseCollector
     {
         private WebClient webClient;
+        private Dictionary<string,FixedSizeTradeQueue> dictTradeCache=new Dictionary<string, FixedSizeTradeQueue>();
         private Dictionary<string, string> dictGMToTensent = new Dictionary<string, string>();
         
         public TensentCollector()
         {
             this.webClient = new WebClient();
         }
-        public override Dictionary<string, Tick> Current(List<string> symbols)
+        public override Dictionary<string, Tick> Current(IEnumerable<string> symbols)
         {
             Dictionary<string, Tick> ret = new Dictionary<string, Tick>();
             string url = "http://qt.gtimg.cn/q=";
@@ -39,10 +40,12 @@ namespace TradeDataCollector
                 tickStrings.Add(tickString);
             }
             stream.Close();
-
-            for (int i = 0; i < symbols.Count; i++)
+            int i = 0;
+            foreach (string symbol in symbols)
             {
+                if (i >= tickStrings.Count) break;
                 string[] data = tickStrings[i].Split('~');
+                if (!data[0].Contains(this.dictGMToTensent[symbol])) continue;
                 Tick aTick = new Tick
                 {
                     Price = float.Parse(data[3]),
@@ -53,7 +56,7 @@ namespace TradeDataCollector
                     UpperLimit = float.Parse(data[47]),
                     LowerLimit = float.Parse(data[48])
                 };
-                for (int k = 0; i < 5; i++) { 
+                for (int k = 0; k < 5; k++) { 
                     aTick.Quotes[k] = new Quote
                     {
                         BidPrice = float.Parse(data[9+k*2]),
@@ -81,13 +84,27 @@ namespace TradeDataCollector
                     };
                     lastTrades.Add(aTrade);
                 }
-                aTick.Volume = lastTrades[0].Volume;
-                aTick.Amount = lastTrades[0].Amount;
-                aTick.BuyOrSell = lastTrades[0].BuyOrSell;
-                ret.Add(symbols[i], aTick);
+                if (lastTrades.Count>0) {
+                    aTick.Volume = lastTrades[0].Volume;
+                    aTick.Amount = lastTrades[0].Amount;
+                    aTick.BuyOrSell = lastTrades[0].BuyOrSell;
+                    aTick.DateTime=lastTrades[0].DateTime;
+                    FixedSizeTradeQueue tradeQueue;
+                    if (!this.dictTradeCache.TryGetValue(symbol,out tradeQueue))
+                    {
+                        tradeQueue=new FixedSizeTradeQueue(30);
+                        this.dictTradeCache[symbol] = tradeQueue;
+                    }
+                    
+                    foreach(Trade aTrade in lastTrades)
+                    {
+                        if (!tradeQueue.Add(aTrade)) break;
+                    }
+                }
+                ret.Add(symbol, aTick);
+                i++;
             }
             return ret;
-            //throw new NotImplementedException();
         }
 
         public override List<Bar> HistoryBars(string symbol, int size, string startTime, string endTime)

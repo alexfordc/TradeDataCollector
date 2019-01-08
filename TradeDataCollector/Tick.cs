@@ -22,5 +22,21 @@ namespace TradeDataCollector
         public float UpperLimit;//涨停价
         public float LowerLimit;//跌停价
         public Quote[] Quotes=new Quote[5];//五档报价
+
+        public override string ToString()
+        {
+            string str = String.Format("DateTime:{0},LastClose:{1},Open:{2},High:{3},Low:{4},Price:{5}," +
+                "Volume:{6},Amount:{7},CumVolume:{8},CumAmount:{9},BuyOrSell:{10},UpperLimit:{11}," +
+                "LowerLimit:{12},", DateTime, LastClose, Open, High, Low, Price, Volume, Amount, CumVolume, CumAmount
+                , BuyOrSell, UpperLimit, LowerLimit);
+            str += "Quotes:[";
+            for(int i= 0; i<Quotes.Length;i++)
+            {
+                str +='{'+ Quotes[i].ToString()+'}';
+                if (i < Quotes.Length - 1) str += ',';
+            }
+            str += ']';
+            return str;
+        }
     }
 }
