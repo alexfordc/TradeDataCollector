@@ -128,8 +128,47 @@ namespace TradeDataCollector
             if (time1 < tradeQueue.MinTime || time1 > tradeQueue.MaxTime)
             {
                 //读取今天的tick
-            } else
-            {
+                string url="http://stock.gtimg.cn/data/index.php?appn=detail&action=data&c=";
+                int left=0;
+                int right=100;
+                bool find=false;
+                while(!find&&left<=right){
+                    int mid=(left+right)/2;
+                    Stream stream = this.webClient.OpenRead(url+String.Format("&p={0}"+mid));
+                    StreamReader reader = new StreamReader(stream);
+                    string dataString;
+                    if  ((dataString = reader.ReadLine()) != null)
+                    {
+                        string[] tradeStrings=dataString.Split('|');
+                        int len=tradeStrings.Length;
+                        if (mid==0) find=true;
+                        else {
+                            DateTime lTime= DateTime.Today.Add(TimeSpan.Parse((tradeStrings[0].Split('/'))[1]));
+                            DateTime rTime= DateTime.Today.Add(TimeSpan.Parse((tradeStrings[len-1].Split('/'))[1]));
+                            if (lTime<=time1&&time1<=rTime) find=true;
+                            else if(time1<lTime) right=mid-1;
+                            else if(time1>rTime) left=mid+1;
+                        }
+                        if (find){
+                            for (int k=0;k<tradeStrings.Length;k++)
+                            {
+                                string[] temp = tradeStrings[k].Split('/');
+                                Trade aTrade = new Trade
+                                {
+                                    DateTime = DateTime.Today.Add(TimeSpan.Parse(temp[1])),
+                                    Price = float.Parse(temp[2]),
+                                    Volume = int.Parse(temp[4])*100,
+                                    BuyOrSell = temp[6][0],
+                                    Amount = double.Parse(temp[5])
+                                };
+                                if (aTrade.DateTime >= time1 && aTrade.DateTime <= time2) ret.Add(aTrade);
+
+                            }  
+                        }
+                    }else right=mid-1;
+                    stream.Close();
+                }
+            }else{
                 foreach (Trade aTrade in tradeQueue.Values)
                 {
                     if (aTrade.DateTime >= time1 && aTrade.DateTime <= time2) ret.Add(aTrade);
