@@ -134,7 +134,6 @@ namespace TradeDataCollector
                 if (this.dictPageTimeList.TryGetValue(symbol,out pageTimeList))
                 {
                     startPage = this.searchStartPage(pageTimeList, time1);//本地页表查找
-                    Console.WriteLine(startPage);
                 }
                 else
                 {
@@ -150,9 +149,7 @@ namespace TradeDataCollector
                 string url = "http://stock.gtimg.cn/data/index.php?appn=detail&action=data&c="+ tensentSymbol;
                 if (startPage == -1)
                 {
-                    Console.WriteLine("search from web...");
                     startPage = this.searchStartPage(url, time1);//远程请求数据查找
-                    Console.WriteLine(startPage);
                 }
                 bool finished = false;
                 while (!finished)
@@ -234,8 +231,10 @@ namespace TradeDataCollector
                 {
                     right = mid-1;
                 }else
-                {
-                    left = mid;
+                {                   
+                    DateTime next=pageTimeList[mid+1];
+                    if (time<next) return mid;
+                    else left = mid+1;  
                 }
             }
             if (time < pageTimeList[left]) return -1;
@@ -249,7 +248,7 @@ namespace TradeDataCollector
             {
                 int mid = (left + right) / 2;
                 Stream stream = this.webClient.OpenRead(url + String.Format("&p={0}", mid));
-                Console.WriteLine(url + String.Format("&p={0}", mid));
+                //Console.WriteLine(url + String.Format("&p={0}", mid));
                 StreamReader reader = new StreamReader(stream);
                 string dataString;
                 if ((dataString = reader.ReadLine()) != null)
@@ -258,18 +257,20 @@ namespace TradeDataCollector
                     int len = tradeStrings.Length;
                     if (len < 1) continue;
                     string[] temp = tradeStrings[0].Split('/');
-                    DateTime cur = DateTime.Today.Add(TimeSpan.Parse(temp[1]));
-                    Console.WriteLine(cur);
-                    if (time < cur)
+                    DateTime first = DateTime.Today.Add(TimeSpan.Parse(temp[1]));
+                    if (time < first)
                     {
                         right = mid - 1;
                     }
                     else
                     {
-                        left = mid;
+                        temp = tradeStrings[len-1].Split('/');
+                        DateTime last = DateTime.Today.Add(TimeSpan.Parse(temp[1]));
+                        if (time<=last) return mid;
+                        else left = mid+1;
                     }
                 }
-                else break;
+                else right=mid-1;
                 stream.Close();
             }
             return left;

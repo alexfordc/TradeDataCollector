@@ -27,7 +27,7 @@ namespace Test
             }
             Console.ReadKey();
             Console.WriteLine();
-            data1 = tc.HistoryTicks("SZSE.002361", "2019-01-11 14:50:00");
+            data1 = tc.HistoryTicks("SZSE.002361", "2019-01-11 14:00:00");
             foreach (Trade trade in data1)
             {
                 Console.WriteLine(trade.ToString());
@@ -40,14 +40,24 @@ namespace Test
                 Console.WriteLine(trade.ToString());
             }
             Console.ReadKey();
+            Console.WriteLine();
             //掘金数据测试
-            //GMCollector gc = new GMCollector();
-            //Dictionary<string, Tick>  data1 = gc.Current(new string[] { "SZSE.002361", "SHSE.603186", });
-            //foreach (KeyValuePair<string, Tick> kvp in data1)
-            //{
-            //    Console.WriteLine("{0}:{1}", kvp.Key, kvp.Value);
-            //}
-            //Console.ReadKey();
+            GMCollector gc = new GMCollector();
+            data = gc.Current(new string[] { "SZSE.002361", "SHSE.603186", });
+            foreach (KeyValuePair<string, Tick> kvp in data)
+            {
+                Console.WriteLine("{0}:{1}", kvp.Key, kvp.Value);
+            }
+            Console.ReadKey();
+            Console.WriteLine();
+            data1=gc.HistoryTicks("SZSE.002361","2019-01-11 14:50:00");
+            foreach (Trade trade in data1)
+            {
+                Console.WriteLine(trade.ToString());
+            }
+            Console.ReadKey();
+            Console.WriteLine();
+
         }
     }
 }

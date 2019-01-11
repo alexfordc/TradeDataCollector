@@ -80,12 +80,74 @@ namespace TradeDataCollector
 
         public override List<Trade> HistoryTicks(string symbol, string startTime, string endTime="")
         {
-            throw new NotImplementedException();
+            List<Trade> ret=new List<Trade>();
+            if (endTime=="") endTime=DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            GMDataList<GMSDK.Tick> dataList=GMApi.HistoryTicks(symbol,startTime,endTime);
+            if (dataList.status != 0)
+            {
+                throw new Exception(this.GetErrorMsg(dataList.status));
+            }
+            foreach(GMSDK.Tick gmTick in dataList.data)
+            {
+                if (gmTick.lastVolume<=0) continue;
+                Trade aTrade = new Trade
+                {
+                    DateTime = gmTick.createdAt,
+                    Price = gmTick.price,
+                    Volume = gmTick.lastVolume,
+                    Amount = gmTick.lastAmount,
+                };
+                
+                switch (gmTick.tradeType)
+                {
+                    case 7:
+                        aTrade.BuyOrSell = 'S';
+                        break;
+                    case 8:
+                        aTrade.BuyOrSell = 'B';
+                        break;
+                    default:
+                        aTrade.BuyOrSell = 'N';
+                        break;
+                }
+                ret.Add(aTrade);
+            }
+            return ret;    
         }
 
         public override List<Trade> HistoryTicksN(string symbol, int n, string endTime="")
         {
-            throw new NotImplementedException();
+            List<Trade> ret=new List<Trade>();
+            GMDataList<GMSDK.Tick> dataList=GMApi.HistoryTicksN(symbol,n,endTime);
+            if (dataList.status != 0)
+            {
+                throw new Exception(this.GetErrorMsg(dataList.status));
+            }
+            foreach(GMSDK.Tick gmTick in dataList.data)
+            {
+                Trade aTrade = new Trade
+                {
+                    DateTime = gmTick.createdAt,
+                    Price = gmTick.price,
+                    Volume = gmTick.lastVolume,
+                    Amount = gmTick.lastAmount,
+                };
+                
+                switch (gmTick.tradeType)
+                {
+                    case 7:
+                        aTrade.BuyOrSell = 'S';
+                        break;
+                    case 8:
+                        aTrade.BuyOrSell = 'B';
+                        break;
+                    default:
+                        aTrade.BuyOrSell = 'N';
+                        break;
+                }
+                ret.Add(aTrade);
+            }
+            return ret;    
         }
 
         private string GetErrorMsg(int errorCode)
