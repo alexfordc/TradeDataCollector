@@ -13,5 +13,11 @@ namespace TradeDataCollector
         public int Volume;
         public double Amount;
         public char BuyOrSell;
+        public override string ToString()
+        {
+            string str = String.Format("DateTime:{0},Price:{1},Volume:{2},Amount:{3},BuyOrSell:{4}",
+                DateTime, Price, Volume, Amount, BuyOrSell);
+            return str;
+        }
     }
 }

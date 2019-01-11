@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Net;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace TradeDataCollector
 {
@@ -10,7 +12,7 @@ namespace TradeDataCollector
         private WebClient webClient;
         private Dictionary<string,FixedSizeTradeQueue> dictTradeCache=new Dictionary<string, FixedSizeTradeQueue>();
         private Dictionary<string, string> dictGMToTensent = new Dictionary<string, string>();
-        
+        private Dictionary<string, SortedList<int, DateTime>> dictPageTimeList = new Dictionary<string, SortedList<int, DateTime>>();
         public TensentCollector()
         {
             this.webClient = new WebClient();
@@ -127,48 +129,79 @@ namespace TradeDataCollector
             List<Trade> ret = new List<Trade>();
             if (time1 < tradeQueue.MinTime || time1 > tradeQueue.MaxTime)
             {
-                //读取今天的tick
-                string url="http://stock.gtimg.cn/data/index.php?appn=detail&action=data&c=";
-                int left=0;
-                int right=100;
-                bool find=false;
-                while(!find&&left<=right){
-                    int mid=(left+right)/2;
-                    Stream stream = this.webClient.OpenRead(url+String.Format("&p={0}"+mid));
+                int startPage = -1;
+                SortedList<int, DateTime> pageTimeList;
+                if (this.dictPageTimeList.TryGetValue(symbol,out pageTimeList))
+                {
+                    startPage = this.searchStartPage(pageTimeList, time1);//本地页表查找
+                    Console.WriteLine(startPage);
+                }
+                else
+                {
+                    pageTimeList = new SortedList<int, DateTime>();
+                    this.dictPageTimeList.Add(symbol, pageTimeList);
+                }
+                string tensentSymbol;
+                if (!this.dictGMToTensent.TryGetValue(symbol, out tensentSymbol))
+                {
+                    tensentSymbol = this.ConvertGMSymbolToTensent(symbol);
+                    this.dictGMToTensent[symbol] = tensentSymbol;
+                }
+                string url = "http://stock.gtimg.cn/data/index.php?appn=detail&action=data&c="+ tensentSymbol;
+                if (startPage == -1)
+                {
+                    Console.WriteLine("search from web...");
+                    startPage = this.searchStartPage(url, time1);//远程请求数据查找
+                    Console.WriteLine(startPage);
+                }
+                bool finished = false;
+                while (!finished)
+                {
+                    Stream stream = this.webClient.OpenRead(url + String.Format("&p={0}",startPage));
                     StreamReader reader = new StreamReader(stream);
                     string dataString;
-                    if  ((dataString = reader.ReadLine()) != null)
+                    if ((dataString = reader.ReadLine()) != null)
                     {
-                        string[] tradeStrings=dataString.Split('|');
-                        int len=tradeStrings.Length;
-                        if (mid==0) find=true;
-                        else {
-                            DateTime lTime= DateTime.Today.Add(TimeSpan.Parse((tradeStrings[0].Split('/'))[1]));
-                            DateTime rTime= DateTime.Today.Add(TimeSpan.Parse((tradeStrings[len-1].Split('/'))[1]));
-                            if (lTime<=time1&&time1<=rTime) find=true;
-                            else if(time1<lTime) right=mid-1;
-                            else if(time1>rTime) left=mid+1;
-                        }
-                        if (find){
-                            for (int k=0;k<tradeStrings.Length;k++)
+                        string[] tradeStrings = dataString.Split('|');
+                        int len = tradeStrings.Length;
+                        if (len < 1) continue;
+                        else
+                        {
+                            string[] temp = tradeStrings[0].Split('/');
+                            DateTime tempTime = DateTime.Today.Add(TimeSpan.Parse(temp[1]));
+                            string pattern = @"\[(\d{1,}),";
+                            Match mat = Regex.Match(temp[0], pattern);
+                            if (mat.Groups.Count>1)
                             {
-                                string[] temp = tradeStrings[k].Split('/');
-                                Trade aTrade = new Trade
-                                {
-                                    DateTime = DateTime.Today.Add(TimeSpan.Parse(temp[1])),
-                                    Price = float.Parse(temp[2]),
-                                    Volume = int.Parse(temp[4])*100,
-                                    BuyOrSell = temp[6][0],
-                                    Amount = double.Parse(temp[5])
-                                };
-                                if (aTrade.DateTime >= time1 && aTrade.DateTime <= time2) ret.Add(aTrade);
-
-                            }  
+                                int page = int.Parse(mat.Groups[1].Value);
+                                pageTimeList[page] = tempTime;
+                            }
                         }
-                    }else right=mid-1;
+                        for (int k = 0; k < len; k++)
+                        {
+                            string[] temp = tradeStrings[k].Split('/');
+                            Trade aTrade = new Trade
+                            {
+                                DateTime = DateTime.Today.Add(TimeSpan.Parse(temp[1])),
+                                Price = float.Parse(temp[2]),
+                                Volume = int.Parse(temp[4]) * 100,
+                                BuyOrSell = temp[6][0],
+                                Amount = double.Parse(temp[5])
+                            };
+                            if (aTrade.DateTime >= time1 && aTrade.DateTime <= time2) ret.Add(aTrade);
+                            if (aTrade.DateTime > time2)
+                            {
+                                finished = true;
+                                break;
+                            }
+                        }
+                    }
+                    else finished = true;
                     stream.Close();
+                    startPage++;
                 }
-            }else{
+            }
+            else{
                 foreach (Trade aTrade in tradeQueue.Values)
                 {
                     if (aTrade.DateTime >= time1 && aTrade.DateTime <= time2) ret.Add(aTrade);
@@ -186,6 +219,60 @@ namespace TradeDataCollector
         {
             string[] strArray = gmSymbol.Split('.');
             return strArray[0].Substring(0, 2).ToLower() + strArray[1];
+        }
+
+        private int searchStartPage(SortedList<int,DateTime> pageTimeList,DateTime time)
+        {
+            int left = pageTimeList.Keys.First();
+            int right = pageTimeList.Keys.Last();
+          
+            while (left < right)
+            {
+                int mid = (left + right) / 2;
+                DateTime cur = pageTimeList[mid];
+                if (time < cur)
+                {
+                    right = mid-1;
+                }else
+                {
+                    left = mid;
+                }
+            }
+            if (time < pageTimeList[left]) return -1;
+            else return left;
+        }
+        private int searchStartPage(string url, DateTime time)
+        {
+            int left = 0;
+            int right = 100;
+            while (left < right)
+            {
+                int mid = (left + right) / 2;
+                Stream stream = this.webClient.OpenRead(url + String.Format("&p={0}", mid));
+                Console.WriteLine(url + String.Format("&p={0}", mid));
+                StreamReader reader = new StreamReader(stream);
+                string dataString;
+                if ((dataString = reader.ReadLine()) != null)
+                {
+                    string[] tradeStrings = dataString.Split('|');
+                    int len = tradeStrings.Length;
+                    if (len < 1) continue;
+                    string[] temp = tradeStrings[0].Split('/');
+                    DateTime cur = DateTime.Today.Add(TimeSpan.Parse(temp[1]));
+                    Console.WriteLine(cur);
+                    if (time < cur)
+                    {
+                        right = mid - 1;
+                    }
+                    else
+                    {
+                        left = mid;
+                    }
+                }
+                else break;
+                stream.Close();
+            }
+            return left;
         }
     }
 }
