@@ -54,10 +54,10 @@ namespace TradeDataCollector
                 switch (gmTick.tradeType)
                 {
                     case 7:
-                        aTick.BuyOrSell = 'S';
+                        aTick.BuyOrSell = 'B';
                         break;
                     case 8:
-                        aTick.BuyOrSell = 'B';
+                        aTick.BuyOrSell = 'S';
                         break;
                     default:
                         aTick.BuyOrSell = 'N';
@@ -78,7 +78,7 @@ namespace TradeDataCollector
             throw new NotImplementedException();
         }
 
-        public override List<Trade> HistoryTicks(string symbol, string startTime, string endTime="")
+        public override List<Trade> HistoryTrades(string symbol, string startTime, string endTime="")
         {
             List<Trade> ret=new List<Trade>();
             if (endTime=="") endTime=DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -101,10 +101,10 @@ namespace TradeDataCollector
                 switch (gmTick.tradeType)
                 {
                     case 7:
-                        aTrade.BuyOrSell = 'S';
+                        aTrade.BuyOrSell = 'B';
                         break;
                     case 8:
-                        aTrade.BuyOrSell = 'B';
+                        aTrade.BuyOrSell = 'S';
                         break;
                     default:
                         aTrade.BuyOrSell = 'N';
@@ -115,9 +115,10 @@ namespace TradeDataCollector
             return ret;    
         }
 
-        public override List<Trade> HistoryTicksN(string symbol, int n, string endTime="")
+        public override List<Trade> HistoryTradesN(string symbol, int n, string endTime="")
         {
             List<Trade> ret=new List<Trade>();
+            if (endTime == "") endTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             GMDataList<GMSDK.Tick> dataList=GMApi.HistoryTicksN(symbol,n,endTime);
             if (dataList.status != 0)
             {
@@ -136,10 +137,10 @@ namespace TradeDataCollector
                 switch (gmTick.tradeType)
                 {
                     case 7:
-                        aTrade.BuyOrSell = 'S';
+                        aTrade.BuyOrSell = 'B';
                         break;
                     case 8:
-                        aTrade.BuyOrSell = 'B';
+                        aTrade.BuyOrSell = 'S';
                         break;
                     default:
                         aTrade.BuyOrSell = 'N';

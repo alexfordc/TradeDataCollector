@@ -7,13 +7,14 @@ using System.Text.RegularExpressions;
 
 namespace TradeDataCollector
 {
-    public class TensentCollector : BaseCollector
+    public class TencentCollector : BaseCollector
     {
         private WebClient webClient;
-        private Dictionary<string,FixedSizeTradeQueue> dictTradeCache=new Dictionary<string, FixedSizeTradeQueue>();
+        private Dictionary<string, FixedSizeTradeQueue> dictTradeCache = new Dictionary<string, FixedSizeTradeQueue>();
         private Dictionary<string, string> dictGMToTensent = new Dictionary<string, string>();
-        private Dictionary<string, SortedList<int, DateTime>> dictPageTimeList = new Dictionary<string, SortedList<int, DateTime>>();
-        public TensentCollector()
+        private Dictionary<string, PageTimeList> dictPageTimeList = new Dictionary<string, PageTimeList>();
+        private Dictionary<string, DateTime> dictLastTradeDate = new Dictionary<string, DateTime>();
+        public TencentCollector()
         {
             this.webClient = new WebClient();
         }
@@ -23,25 +24,17 @@ namespace TradeDataCollector
             string url = "http://qt.gtimg.cn/q=";
             foreach (string symbol in symbols)
             {
-                string tensentSymbol;
-                if (!this.dictGMToTensent.TryGetValue(symbol, out tensentSymbol))
-                {
-                    tensentSymbol = this.ConvertGMSymbolToTensent(symbol);
-                    this.dictGMToTensent[symbol] = tensentSymbol;
-                }
+                string tensentSymbol = this.getTencentSymbol(symbol);
                 url += tensentSymbol + ",";
             }
             List<string> tickStrings = new List<string>();
 
             Stream stream = this.webClient.OpenRead(url);
             StreamReader reader = new StreamReader(stream);
-            //Console.WriteLine(url);
             string tickString;
-            while ((tickString = reader.ReadLine()) != null)
-            {
-                tickStrings.Add(tickString);
-            }
+            while ((tickString = reader.ReadLine()) != null) tickStrings.Add(tickString);
             stream.Close();
+
             int i = 0;
             foreach (string symbol in symbols)
             {
@@ -56,8 +49,10 @@ namespace TradeDataCollector
                     High = float.Parse(data[33]),
                     Low = float.Parse(data[34]),
                     UpperLimit = float.Parse(data[47]),
-                    LowerLimit = float.Parse(data[48])
+                    LowerLimit = float.Parse(data[48]),
+                    DateTime = DateTime.ParseExact(data[30], "yyyyMMddHHmmss",null) //此为快照生成时间，不是最新交易时间
                 };
+                this.dictLastTradeDate[symbol] = aTick.DateTime.Date;//当前交易日期
                 for (int k = 0; k < 5; k++)
                 {
                     aTick.Quotes[k] = new Quote
@@ -71,19 +66,13 @@ namespace TradeDataCollector
 
                 string[] tradeStrings = data[29].Split('|');
                 if (tradeStrings.Length < 1) continue;
-                FixedSizeTradeQueue tradeQueue;
-                if (!this.dictTradeCache.TryGetValue(symbol, out tradeQueue))
-                {
-                    tradeQueue = new FixedSizeTradeQueue(30);
-                    this.dictTradeCache[symbol] = tradeQueue;
-                }
-                
+                FixedSizeTradeQueue tradeQueue=this.getTradeQueue(symbol);
                 for (int k = tradeStrings.Length - 1; k >= 0; k--)
                 {
                     string[] temp = tradeStrings[k].Split('/');
                     Trade aTrade = new Trade
                     {
-                        DateTime = DateTime.Today.Add(TimeSpan.Parse(temp[0])),
+                        DateTime = aTick.DateTime.Date.Add(TimeSpan.Parse(temp[0])),
                         Price = float.Parse(temp[1]),
                         Volume = int.Parse(temp[2])*100,
                         BuyOrSell = temp[3][0],
@@ -95,7 +84,7 @@ namespace TradeDataCollector
                 aTick.Volume = lastTrade.Volume;
                 aTick.Amount = lastTrade.Amount;
                 aTick.BuyOrSell = lastTrade.BuyOrSell;
-                aTick.DateTime = lastTrade.DateTime;
+                //aTick.DateTime = lastTrade.DateTime;
                 aTick.CumVolume = double.Parse(data[36]) * 100;
                 aTick.CumAmount = double.Parse(data[37]) *10000;
                 ret.Add(symbol, aTick);
@@ -114,43 +103,25 @@ namespace TradeDataCollector
             throw new NotImplementedException();
         }
 
-        public override List<Trade> HistoryTicks(string symbol, string startTime, string endTime="")
+        public override List<Trade> HistoryTrades(string symbol, string startTime, string endTime="")
         {
             DateTime time1 = DateTime.Parse(startTime);
             DateTime time2 = DateTime.Now;
             if (endTime != "") time2 = DateTime.Parse(endTime);
 
-            FixedSizeTradeQueue tradeQueue;
-            if (!this.dictTradeCache.TryGetValue(symbol, out tradeQueue))
-            {
-                tradeQueue = new FixedSizeTradeQueue(30);
-                this.dictTradeCache[symbol] = tradeQueue;
-            }
+            FixedSizeTradeQueue tradeQueue = this.getTradeQueue(symbol);
             List<Trade> ret = new List<Trade>();
             if (time1 < tradeQueue.MinTime || time1 > tradeQueue.MaxTime)
             {
                 int startPage = -1;
-                SortedList<int, DateTime> pageTimeList;
-                if (this.dictPageTimeList.TryGetValue(symbol,out pageTimeList))
-                {
-                    startPage = this.searchStartPage(pageTimeList, time1);//本地页表查找
-                }
-                else
-                {
-                    pageTimeList = new SortedList<int, DateTime>();
-                    this.dictPageTimeList.Add(symbol, pageTimeList);
-                }
-                string tensentSymbol;
-                if (!this.dictGMToTensent.TryGetValue(symbol, out tensentSymbol))
-                {
-                    tensentSymbol = this.ConvertGMSymbolToTensent(symbol);
-                    this.dictGMToTensent[symbol] = tensentSymbol;
-                }
+                PageTimeList pageTimeList=this.getPageTimeList(symbol);
+                startPage = pageTimeList.FindPageByTime(time1);//本地页表查找
+                
+                string tensentSymbol=this.getTencentSymbol(symbol);
+                DateTime lastTradeDate = this.getLastTradeDate(symbol);
                 string url = "http://stock.gtimg.cn/data/index.php?appn=detail&action=data&c="+ tensentSymbol;
-                if (startPage == -1)
-                {
-                    startPage = this.searchStartPage(url, time1);//远程请求数据查找
-                }
+                if (startPage == -1) startPage = this.searchStartPage(url,lastTradeDate,time1);//远程请求数据查找
+               
                 bool finished = false;
                 while (!finished)
                 {
@@ -164,8 +135,9 @@ namespace TradeDataCollector
                         if (len < 1) continue;
                         else
                         {
+                            //保存分页时间表
                             string[] temp = tradeStrings[0].Split('/');
-                            DateTime tempTime = DateTime.Today.Add(TimeSpan.Parse(temp[1]));
+                            DateTime tempTime = lastTradeDate.Add(TimeSpan.Parse(temp[1]));
                             string pattern = @"\[(\d{1,}),";
                             Match mat = Regex.Match(temp[0], pattern);
                             if (mat.Groups.Count>1)
@@ -179,7 +151,7 @@ namespace TradeDataCollector
                             string[] temp = tradeStrings[k].Split('/');
                             Trade aTrade = new Trade
                             {
-                                DateTime = DateTime.Today.Add(TimeSpan.Parse(temp[1])),
+                                DateTime = lastTradeDate.Add(TimeSpan.Parse(temp[1])),
                                 Price = float.Parse(temp[2]),
                                 Volume = int.Parse(temp[4]) * 100,
                                 BuyOrSell = temp[6][0],
@@ -207,40 +179,15 @@ namespace TradeDataCollector
             return ret;
         }
 
-        public override List<Trade> HistoryTicksN(string symbol, int n, string endTime="")
+        public override List<Trade> HistoryTradesN(string symbol, int n, string endTime="")
         {
             throw new NotImplementedException();
         }
 
-        private string ConvertGMSymbolToTensent(string gmSymbol)
-        {
-            string[] strArray = gmSymbol.Split('.');
-            return strArray[0].Substring(0, 2).ToLower() + strArray[1];
-        }
+        
 
-        private int searchStartPage(SortedList<int,DateTime> pageTimeList,DateTime time)
-        {
-            int left = pageTimeList.Keys.First();
-            int right = pageTimeList.Keys.Last();
-          
-            while (left < right)
-            {
-                int mid = (left + right) / 2;
-                DateTime cur = pageTimeList[mid];
-                if (time < cur)
-                {
-                    right = mid-1;
-                }else
-                {                   
-                    DateTime next=pageTimeList[mid+1];
-                    if (time<next) return mid;
-                    else left = mid+1;  
-                }
-            }
-            if (time < pageTimeList[left]) return -1;
-            else return left;
-        }
-        private int searchStartPage(string url, DateTime time)
+       
+        private int searchStartPage(string url,DateTime lastTradeDate, DateTime timeToSearch)
         {
             int left = 0;
             int right = 100;
@@ -248,7 +195,6 @@ namespace TradeDataCollector
             {
                 int mid = (left + right) / 2;
                 Stream stream = this.webClient.OpenRead(url + String.Format("&p={0}", mid));
-                //Console.WriteLine(url + String.Format("&p={0}", mid));
                 StreamReader reader = new StreamReader(stream);
                 string dataString;
                 if ((dataString = reader.ReadLine()) != null)
@@ -257,16 +203,16 @@ namespace TradeDataCollector
                     int len = tradeStrings.Length;
                     if (len < 1) continue;
                     string[] temp = tradeStrings[0].Split('/');
-                    DateTime first = DateTime.Today.Add(TimeSpan.Parse(temp[1]));
-                    if (time < first)
+                    DateTime first = lastTradeDate.Add(TimeSpan.Parse(temp[1]));
+                    if (timeToSearch < first)
                     {
                         right = mid - 1;
                     }
                     else
                     {
                         temp = tradeStrings[len-1].Split('/');
-                        DateTime last = DateTime.Today.Add(TimeSpan.Parse(temp[1]));
-                        if (time<=last) return mid;
+                        DateTime last = lastTradeDate.Add(TimeSpan.Parse(temp[1]));
+                        if (timeToSearch <= last) return mid;
                         else left = mid+1;
                     }
                 }
@@ -274,6 +220,47 @@ namespace TradeDataCollector
                 stream.Close();
             }
             return left;
+        }
+        private string getTencentSymbol(string symbol)
+        {
+            string tensentSymbol;
+            if (!this.dictGMToTensent.TryGetValue(symbol, out tensentSymbol))
+            {
+                string[] strArray = symbol.Split('.');
+                tensentSymbol = strArray[0].Substring(0, 2).ToLower() + strArray[1];
+                this.dictGMToTensent[symbol] = tensentSymbol;
+            }
+            return tensentSymbol;
+        }
+        private FixedSizeTradeQueue getTradeQueue(string symbol)
+        {
+            FixedSizeTradeQueue tradeQueue;
+            if (!this.dictTradeCache.TryGetValue(symbol, out tradeQueue))
+            {
+                tradeQueue = new FixedSizeTradeQueue(30);
+                this.dictTradeCache[symbol] = tradeQueue;
+            }
+            return tradeQueue;
+        }
+        private PageTimeList getPageTimeList(string symbol)
+        {
+            PageTimeList pageTimeList;
+            if (!this.dictPageTimeList.TryGetValue(symbol, out pageTimeList))
+            {
+                pageTimeList = new PageTimeList();
+                this.dictPageTimeList.Add(symbol, pageTimeList);
+            }
+            return pageTimeList;
+        }
+        private DateTime getLastTradeDate(string symbol)
+        {
+            DateTime lastTradeDate;
+            if (!this.dictLastTradeDate.TryGetValue(symbol,out lastTradeDate))
+            {
+                lastTradeDate = DateTime.Today;
+                this.dictLastTradeDate.Add(symbol, lastTradeDate);
+            }
+            return lastTradeDate;
         }
     }
 }

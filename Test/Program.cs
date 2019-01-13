@@ -12,7 +12,7 @@ namespace Test
         {
 
             //腾讯数据测试
-            TensentCollector tc = new TensentCollector();
+            TencentCollector tc = new TencentCollector();
             Dictionary<string, Tick> data = tc.Current(new string[] { "SZSE.002361", "SHSE.603186", });
             foreach (KeyValuePair<string, Tick> kvp in data)
             {
@@ -20,28 +20,28 @@ namespace Test
             }
             Console.ReadKey();
             Console.WriteLine();
-            List<Trade> data1 = tc.HistoryTicks("SZSE.002361", "2019-01-11 14:56:50");
+            List<Trade> data1 = tc.HistoryTrades("SZSE.002361", "2019-01-11 14:56:50");
             foreach(Trade trade in data1)
             {
                 Console.WriteLine(trade.ToString());
             }
             Console.ReadKey();
             Console.WriteLine();
-            data1 = tc.HistoryTicks("SZSE.002361", "2019-01-11 14:00:00");
+            data1 = tc.HistoryTrades("SZSE.002361", "2019-01-11 14:56:00");
             foreach (Trade trade in data1)
             {
                 Console.WriteLine(trade.ToString());
             }
             Console.ReadKey();
             Console.WriteLine();
-            data1 = tc.HistoryTicks("SZSE.002361", "2019-01-11 14:50:00");
+            data1 = tc.HistoryTrades("SZSE.002361", "2019-01-11 14:56:00");
             foreach (Trade trade in data1)
             {
                 Console.WriteLine(trade.ToString());
             }
             Console.ReadKey();
             Console.WriteLine();
-            //掘金数据测试
+            掘金数据测试
             GMCollector gc = new GMCollector();
             data = gc.Current(new string[] { "SZSE.002361", "SHSE.603186", });
             foreach (KeyValuePair<string, Tick> kvp in data)
@@ -50,7 +50,7 @@ namespace Test
             }
             Console.ReadKey();
             Console.WriteLine();
-            data1=gc.HistoryTicks("SZSE.002361","2019-01-11 14:50:00");
+            data1 = gc.HistoryTrades("SZSE.002361", "2019-01-11 14:56:00");
             foreach (Trade trade in data1)
             {
                 Console.WriteLine(trade.ToString());
