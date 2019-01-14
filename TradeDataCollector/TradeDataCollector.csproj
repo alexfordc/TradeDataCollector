@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,8 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="gmsdk-net">
-      <HintPath>..\gmsdk\x64\gmsdk-net.dll</HintPath>
+    <Reference Include="gmsdk-net, Version=3.0.6.2, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\gmsdk\x86\gmsdk-net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -52,9 +54,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Quote.cs" />
     <Compile Include="TdxCollector.cs" />
+    <Compile Include="TdxHqAgent.cs" />
+    <Compile Include="TdxHqWrapper.cs" />
     <Compile Include="TencentCollector.cs" />
     <Compile Include="Tick.cs" />
     <Compile Include="Trade.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

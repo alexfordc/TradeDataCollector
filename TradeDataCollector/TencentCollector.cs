@@ -226,8 +226,7 @@ namespace TradeDataCollector
             string tensentSymbol;
             if (!this.dictGMToTensent.TryGetValue(symbol, out tensentSymbol))
             {
-                string[] strArray = symbol.Split('.');
-                tensentSymbol = strArray[0].Substring(0, 2).ToLower() + strArray[1];
+                tensentSymbol = Utils.GMToTencent(symbol);
                 this.dictGMToTensent[symbol] = tensentSymbol;
             }
             return tensentSymbol;
