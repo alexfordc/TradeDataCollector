@@ -57,7 +57,7 @@ namespace TradeDataCollector
                         aTick.Open= float.Parse(record[5]);
                         aTick.High= float.Parse(record[6]);
                         aTick.Low= float.Parse(record[7]);
-                        aTick.DateTime=DateTime.Parse(record[8]);
+                        //aTick.DateTime=DateTime.Parse(record[8]);
                         aTick.CumVolume= double.Parse(record[10])*100;
                         aTick.Volume= int.Parse(record[11])*100;
                         aTick.CumAmount = double.Parse(record[12]);

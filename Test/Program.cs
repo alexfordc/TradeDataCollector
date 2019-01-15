@@ -20,21 +20,21 @@ namespace Test
             }
             Console.ReadKey();
             Console.WriteLine();
-            List<Trade> data1 = tc.HistoryTrades("SZSE.002361", "2019-01-14 14:56:50");
+            List<Trade> data1 = tc.HistoryTrades("SZSE.002361", "2019-01-15 11:26:50");
             foreach (Trade trade in data1)
             {
                 Console.WriteLine(trade.ToString());
             }
             Console.ReadKey();
             Console.WriteLine();
-            data1 = tc.HistoryTrades("SZSE.002361", "2019-01-14 14:56:00");
+            data1 = tc.HistoryTrades("SZSE.002361", "2019-01-15 11:26:50");
             foreach (Trade trade in data1)
             {
                 Console.WriteLine(trade.ToString());
             }
             Console.ReadKey();
             Console.WriteLine();
-            data1 = tc.HistoryTrades("SZSE.002361", "2019-01-14 14:56:00");
+            data1 = tc.HistoryTrades("SZSE.002361", "2019-01-15 11:26:50");
             foreach (Trade trade in data1)
             {
                 Console.WriteLine(trade.ToString());
@@ -50,7 +50,7 @@ namespace Test
             }
             Console.ReadKey();
             Console.WriteLine();
-            data1 = gc.HistoryTrades("SZSE.002361", "2019-01-14 14:56:00");
+            data1 = gc.HistoryTrades("SZSE.002361", "2019-01-15 11:26:50");
             foreach (Trade trade in data1)
             {
                 Console.WriteLine(trade.ToString());
@@ -64,17 +64,6 @@ namespace Test
                 Console.WriteLine(rags.Result);
 
                 rags = tha.GetQuotes(new byte[] { 0, 1 }, new string[] { "002361", "603186" });
-                if (rags.Succeeded)
-                {
-                    foreach (string[] record in (List<string[]>)rags.Result)
-                    {
-                        foreach (string field in record) Console.Write("{0}  ", field);
-                        Console.WriteLine();
-                    }
-                }
-                Console.ReadKey();
-                Console.WriteLine();
-                rags = tha.GetLastTrades(0, "002361", 0,60);
                 if (rags.Succeeded)
                 {
                     foreach (string[] record in (List<string[]>)rags.Result)
