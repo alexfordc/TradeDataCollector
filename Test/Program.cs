@@ -11,79 +11,71 @@ namespace Test
         static void Main(string[] args)
         {
 
+            string[] testSymbols = new string[] { "SZSE.002361", "SHSE.603186"};
             //腾讯数据测试
+            Console.WriteLine("tencent testing....");
             TencentCollector tc = new TencentCollector();
-            Dictionary<string, Tick> data = tc.Current(new string[] { "SZSE.002361", "SHSE.603186", });
+            Dictionary<string, Tick> data = tc.Current(testSymbols);
             foreach (KeyValuePair<string, Tick> kvp in data)
             {
                 Console.WriteLine("{0}:{1}", kvp.Key, kvp.Value);
             }
-            Console.ReadKey();
+            //Console.ReadKey();
             Console.WriteLine();
-            List<Trade> data1 = tc.HistoryTrades("SZSE.002361", "2019-01-15 11:26:50");
-            foreach (Trade trade in data1)
-            {
-                Console.WriteLine(trade.ToString());
-            }
-            Console.ReadKey();
-            Console.WriteLine();
-            data1 = tc.HistoryTrades("SZSE.002361", "2019-01-15 11:26:50");
-            foreach (Trade trade in data1)
-            {
-                Console.WriteLine(trade.ToString());
-            }
-            Console.ReadKey();
-            Console.WriteLine();
-            data1 = tc.HistoryTrades("SZSE.002361", "2019-01-15 11:26:50");
-            foreach (Trade trade in data1)
-            {
-                Console.WriteLine(trade.ToString());
-            }
-            Console.ReadKey();
-            Console.WriteLine();
+            //List<Trade> data1 = tc.HistoryTrades("SZSE.002361", "2019-01-15 11:26:50");
+            //foreach (Trade trade in data1)
+            //{
+            //    Console.WriteLine(trade.ToString());
+            //}
+            //Console.ReadKey();
+            //Console.WriteLine();
+            //data1 = tc.HistoryTrades("SZSE.002361", "2019-01-15 11:26:50");
+            //foreach (Trade trade in data1)
+            //{
+            //    Console.WriteLine(trade.ToString());
+            //}
+            //Console.ReadKey();
+            //Console.WriteLine();
+            //data1 = tc.HistoryTrades("SZSE.002361", "2019-01-15 11:26:50");
+            //foreach (Trade trade in data1)
+            //{
+            //    Console.WriteLine(trade.ToString());
+            //}
+            //Console.ReadKey();
+            //Console.WriteLine();
             //掘金数据测试
+            Console.WriteLine("gm testing....");
             GMCollector gc = new GMCollector();
-            data = gc.Current(new string[] { "SZSE.002361", "SHSE.603186", });
+            data = gc.Current(testSymbols);
+            foreach (KeyValuePair<string, Tick> kvp in data)
+            {
+                Console.WriteLine("{0}:{1}", kvp.Key, kvp.Value);
+            }
+            Console.WriteLine();
+            //data1 = gc.HistoryTrades("SZSE.002361", "2019-01-15 11:26:50");
+            //foreach (Trade trade in data1)
+            //{
+            //    Console.WriteLine(trade.ToString());
+            //}
+            //Console.ReadKey();
+            //Console.WriteLine();
+            Console.WriteLine("neteasy testing....");
+            NeteasyCollector nc = new NeteasyCollector();
+            data = nc.Current(testSymbols);
+            foreach (KeyValuePair<string, Tick> kvp in data)
+            {
+                Console.WriteLine("{0}:{1}", kvp.Key, kvp.Value);
+            }
+            Console.WriteLine();
+            Console.WriteLine("sina testing....");
+            SinaCollector sc = new SinaCollector();
+            data = sc.Current(testSymbols);
             foreach (KeyValuePair<string, Tick> kvp in data)
             {
                 Console.WriteLine("{0}:{1}", kvp.Key, kvp.Value);
             }
             Console.ReadKey();
             Console.WriteLine();
-            data1 = gc.HistoryTrades("SZSE.002361", "2019-01-15 11:26:50");
-            foreach (Trade trade in data1)
-            {
-                Console.WriteLine(trade.ToString());
-            }
-            Console.ReadKey();
-            Console.WriteLine();
-            TdxHqAgent tha = TdxHqAgent.Instance;
-            ReportArgs rags = tha.Connect("121.14.110.200", 443);
-            if (rags.Succeeded)
-            {
-                Console.WriteLine(rags.Result);
-
-                rags = tha.GetQuotes(new byte[] { 0, 1 }, new string[] { "002361", "603186" });
-                if (rags.Succeeded)
-                {
-                    foreach (string[] record in (List<string[]>)rags.Result)
-                    {
-                        foreach (string field in record) Console.Write("{0}  ", field);
-                        Console.WriteLine();
-                    }
-                }
-                Console.ReadKey();
-                Console.WriteLine();
-                TdxCollector tdxc = new TdxCollector();
-                data = tdxc.Current(new string[] { "SZSE.002361", "SHSE.603186", });
-                foreach (KeyValuePair<string, Tick> kvp in data)
-                {
-                    Console.WriteLine("{0}:{1}", kvp.Key, kvp.Value);
-                }
-                Console.ReadKey();
-                Console.WriteLine();
-
-            }
         }
     }
 }

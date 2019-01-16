@@ -84,7 +84,7 @@ namespace TradeDataCollector
                 aTick.Volume = lastTrade.Volume;
                 aTick.Amount = lastTrade.Amount;
                 aTick.BuyOrSell = lastTrade.BuyOrSell;
-                //aTick.DateTime = lastTrade.DateTime;
+                aTick.DateTime = lastTrade.DateTime;
                 aTick.CumVolume = double.Parse(data[36]) * 100;
                 aTick.CumAmount = double.Parse(data[37]) *10000;
                 ret.Add(symbol, aTick);
@@ -184,9 +184,6 @@ namespace TradeDataCollector
             throw new NotImplementedException();
         }
 
-        
-
-       
         private int searchStartPage(string url,DateTime lastTradeDate, DateTime timeToSearch)
         {
             int left = 0;
@@ -261,5 +258,6 @@ namespace TradeDataCollector
             }
             return lastTradeDate;
         }
+
     }
 }

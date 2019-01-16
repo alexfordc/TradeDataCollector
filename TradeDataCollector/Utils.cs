@@ -7,50 +7,35 @@ using System.Threading.Tasks;
 namespace TradeDataCollector
 {
     public static class Utils
-    {
-        public static TdxSymbol GMToTdx(string symbol)
-        {
-            TdxSymbol tdxSymbol = new TdxSymbol();
-            string[] temp = symbol.Split('.');
-            string market = temp[0];
-            switch (market)
-            {
-                case "SHSE":
-                    tdxSymbol.MarketID = 1;
-                    break;
-                case "SZSE":
-                    tdxSymbol.MarketID = 0;
-                    break;
-            }
-            tdxSymbol.SecurityID = temp[1];
-            return tdxSymbol;
-        }
-        public static string TdxToGM(byte marketID,string securityID)
-        {
-            string exchange = "";
-            switch (marketID)
-            {
-                case 0:
-                    exchange = "SZSE";
-                    break;
-                case 1:
-                    exchange = "SHSE";
-                    break;
-            }
-            return exchange + '.' + securityID;
-        }
+    {       
         public static string GMToTencent(string symbol)
         {
-            string tensentSymbol;
-            string[] strArray = symbol.Split('.');
-            tensentSymbol = strArray[0].Substring(0, 2).ToLower() + strArray[1];
-            return tensentSymbol;
+            string[] temp = symbol.Split('.');
+            temp[0] = temp[0].Substring(0, 2).ToLower();
+            return string.Join("", temp);
         }
-    }
-
-    public struct TdxSymbol
-    {
-        public byte MarketID;
-        public string SecurityID;
+        public static string GMToSina(string symbol)
+        {
+            string[] temp = symbol.Split('.');
+            temp[0] = temp[0].Substring(0, 2).ToLower();
+            return string.Join("", temp);
+        }
+        public static string GMToNeteasy(string symbol)
+        {
+            string newSymbol;
+            string[] temp = symbol.Split('.');
+            byte marketID = 0;
+            switch (temp[0])
+            {
+                case "SHSE":
+                    marketID = 0;
+                    break;
+                case "SZSE":
+                    marketID = 1;
+                    break;
+            }
+            newSymbol = String.Format("{0}", marketID) + temp[1];
+            return newSymbol;
+        }
     }
 }

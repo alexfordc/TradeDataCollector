@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.IO;
 
@@ -10,10 +7,9 @@ namespace TradeDatacenter
 {
     public class Config
     {
-        public int RefreshInterval;
         public string StartTime;
         public string EndTime;
-        public List<DataSource> DataSources;
+        public List<DataMothed> DataMotheds;
 
         private Config() { }
 
@@ -27,10 +23,16 @@ namespace TradeDatacenter
             return con;
         }
     }
-    public class DataSource
+    public class DataMothed
     {
         public string Name;
-        public List<string> Motheds;
-        public List<float> Weights;
+        public int CallInterval;
+        public List<ImplementClass> ImplementClasses;
+        
+    }
+    public class ImplementClass
+    {
+        public string Name;
+        public float Weights;
     }
 }
