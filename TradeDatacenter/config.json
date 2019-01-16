@@ -1,0 +1,34 @@
+{
+	"StartTime":"9:20:00",
+	"EndTime":"15:05:00",
+	"DataMotheds":[
+		{
+			"Name":"Current",
+			"CallInterval":1000,
+			"ImplementClasses":[
+				{
+					"Name":"SinaCollector",
+					"Weight":0.40
+				},
+				{
+					"Name":"TencentCollector",
+					"Weight":0.30
+				},
+				{
+					"Name":"NeteasyCollector",
+					"Weight":0.30
+				}
+			]
+		},
+		{
+			"Name":"HistoryBars",
+			"CallInterval":60000,
+			"ImplementClasses":[
+				{
+					"Name":"GMCollector",
+					"Weight":1.0
+				}
+			]
+		}
+	]
+}
