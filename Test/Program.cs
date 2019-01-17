@@ -44,14 +44,14 @@ namespace Test
             //Console.ReadKey();
             //Console.WriteLine();
             //掘金数据测试
-            Console.WriteLine("gm testing....");
-            GMCollector gc = new GMCollector();
-            data = gc.Current(testSymbols);
-            foreach (KeyValuePair<string, Tick> kvp in data)
-            {
-                Console.WriteLine("{0}:{1}", kvp.Key, kvp.Value);
-            }
-            Console.WriteLine();
+            //Console.WriteLine("gm testing....");
+            //GMCollector gc = new GMCollector();
+            //data = gc.Current(testSymbols);
+            //foreach (KeyValuePair<string, Tick> kvp in data)
+            //{
+            //    Console.WriteLine("{0}:{1}", kvp.Key, kvp.Value);
+            //}
+            //Console.WriteLine();
             //data1 = gc.HistoryTrades("SZSE.002361", "2019-01-15 11:26:50");
             //foreach (Trade trade in data1)
             //{

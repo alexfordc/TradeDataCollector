@@ -82,6 +82,7 @@
   <ItemGroup>
     <Compile Include="Bar.cs" />
     <Compile Include="BaseCollector.cs" />
+    <Compile Include="EastMoneyCollector.cs" />
     <Compile Include="FixedSizeTradeQueue.cs" />
     <Compile Include="GMCollector.cs" />
     <Compile Include="NeteasyCollector.cs" />

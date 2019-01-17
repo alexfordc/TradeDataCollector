@@ -37,6 +37,8 @@
             this.btnStart = new System.Windows.Forms.Button();
             this.btnStop = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
+            this.txtLog = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.myMenu.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -70,46 +72,67 @@
             // 
             // btnStart
             // 
-            this.btnStart.Location = new System.Drawing.Point(12, 12);
+            this.btnStart.Location = new System.Drawing.Point(531, 30);
             this.btnStart.Name = "btnStart";
-            this.btnStart.Size = new System.Drawing.Size(180, 36);
+            this.btnStart.Size = new System.Drawing.Size(102, 36);
             this.btnStart.TabIndex = 1;
-            this.btnStart.Text = "启动";
+            this.btnStart.Text = "启 动";
             this.btnStart.UseVisualStyleBackColor = true;
             // 
             // btnStop
             // 
-            this.btnStop.Location = new System.Drawing.Point(12, 64);
+            this.btnStop.Location = new System.Drawing.Point(531, 92);
             this.btnStop.Name = "btnStop";
-            this.btnStop.Size = new System.Drawing.Size(180, 36);
+            this.btnStop.Size = new System.Drawing.Size(102, 36);
             this.btnStop.TabIndex = 2;
-            this.btnStop.Text = "停止";
+            this.btnStop.Text = "停 止";
             this.btnStop.UseVisualStyleBackColor = true;
             // 
             // label1
             // 
             this.label1.Font = new System.Drawing.Font("宋体", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label1.Location = new System.Drawing.Point(12, 116);
+            this.label1.Location = new System.Drawing.Point(528, 157);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(192, 51);
+            this.label1.Size = new System.Drawing.Size(105, 51);
             this.label1.TabIndex = 3;
             this.label1.Text = "请在配置文件（config.json)中填写各项参数";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // txtLog
+            // 
+            this.txtLog.Location = new System.Drawing.Point(12, 30);
+            this.txtLog.Multiline = true;
+            this.txtLog.Name = "txtLog";
+            this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtLog.Size = new System.Drawing.Size(502, 287);
+            this.txtLog.TabIndex = 4;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(12, 9);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(65, 12);
+            this.label2.TabIndex = 5;
+            this.label2.Text = "运行日志：";
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(207, 176);
+            this.ClientSize = new System.Drawing.Size(645, 322);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.txtLog);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btnStop);
             this.Controls.Add(this.btnStart);
             this.Name = "MainForm";
             this.Text = "数据中心";
-            this.Deactivate += new System.EventHandler(this.Form1_Deactivate);
-            this.Load += new System.EventHandler(this.Form1_Load);
+            this.Deactivate += new System.EventHandler(this.MainForm_Deactivate);
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.myMenu.ResumeLayout(false);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -122,6 +145,8 @@
         private System.Windows.Forms.Button btnStart;
         private System.Windows.Forms.Button btnStop;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox txtLog;
+        private System.Windows.Forms.Label label2;
     }
 }
 

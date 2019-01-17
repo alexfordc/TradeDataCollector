@@ -15,14 +15,9 @@ namespace TradeDatacenter
         [STAThread]
         static void Main()
         {
-            Config con = Config.ReadFromFile("config.json");
-            Console.WriteLine(con.DataMotheds[0].Name);
-            Console.WriteLine(con.DataMotheds[0].CallInterval);
-            Console.WriteLine(con.DataMotheds[0].ImplementClasses[0].Name);
-            //Application.EnableVisualStyles();
-            //Application.SetCompatibleTextRenderingDefault(false);
-            //Application.Run(new MainForm());
-           
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new MainForm());
         }
     }
 }

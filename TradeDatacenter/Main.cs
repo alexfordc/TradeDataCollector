@@ -12,17 +12,25 @@ namespace TradeDatacenter
 {
     public partial class MainForm : Form
     {
+        private Config config;
         public MainForm()
         {
             InitializeComponent();
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void MainForm_Load(object sender, EventArgs e)
         {
-
+            Console.SetOut(new TextBoxWriter(this.txtLog));
+            try
+            {
+                config = Config.ReadFromFile("config.json");
+            }catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
-        private void Form1_Deactivate(object sender, EventArgs e)
+        private void MainForm_Deactivate(object sender, EventArgs e)
         {
             if (this.WindowState == FormWindowState.Minimized)
             {

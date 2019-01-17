@@ -37,5 +37,22 @@ namespace TradeDataCollector
             newSymbol = String.Format("{0}", marketID) + temp[1];
             return newSymbol;
         }
+        public static string GMToEastMoney(string symbol)
+        {
+            string newSymbol;
+            string[] temp = symbol.Split('.');
+            byte marketID = 0;
+            switch (temp[0])
+            {
+                case "SHSE":
+                    marketID = 1;
+                    break;
+                case "SZSE":
+                    marketID = 2;
+                    break;
+            }
+            newSymbol = temp[1]+String.Format("{0}", marketID);
+            return newSymbol;
+        }
     }
 }
