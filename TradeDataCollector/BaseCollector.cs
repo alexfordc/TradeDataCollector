@@ -13,5 +13,6 @@ namespace TradeDataCollector
         public abstract List<Trade> HistoryTradesN(string symbol, int n, string endTime="");
         public abstract List<Bar> HistoryBars(string symbol, int size,string startTime, string endTime="");
         public abstract List<Bar> HistoryBarsN(string symbol, int size, int n, string endTime="");
+        public abstract List<Trade> LastDayTrades(string symbol);
     }
 }

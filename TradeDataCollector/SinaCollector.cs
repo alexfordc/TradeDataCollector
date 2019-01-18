@@ -38,29 +38,32 @@ namespace TradeDataCollector
                 if (i >= tickStrings.Count) break;
                 string[] data = tickStrings[i].Split(',');
                 if (!data[0].Contains(this.dictGMToSina[symbol])) continue;
-                Tick aTick = new Tick
+                if (data.Length >= 31)//保证有数据
                 {
-                    Price = float.Parse(data[3]),
-                    LastClose = float.Parse(data[2]),
-                    Open = float.Parse(data[1]),
-                    High = float.Parse(data[4]),
-                    Low = float.Parse(data[5]),
-                };
-         
-                for (int k = 0; k < 5; k++)
-                {
-                    aTick.Quotes[k] = new Quote
+                    Tick aTick = new Tick
                     {
-                        BidPrice = float.Parse(data[11 + k * 2]),
-                        BidVolume = long.Parse(data[10 + k * 2]),
-                        AskPrice = float.Parse(data[21 + k * 2]),
-                        AskVolume = long.Parse(data[20 + k * 2])
+                        Price = float.Parse(data[3]),
+                        LastClose = float.Parse(data[2]),
+                        Open = float.Parse(data[1]),
+                        High = float.Parse(data[4]),
+                        Low = float.Parse(data[5]),
                     };
+
+                    for (int k = 0; k < 5; k++)
+                    {
+                        aTick.Quotes[k] = new Quote
+                        {
+                            BidPrice = float.Parse(data[11 + k * 2]),
+                            BidVolume = long.Parse(data[10 + k * 2]),
+                            AskPrice = float.Parse(data[21 + k * 2]),
+                            AskVolume = long.Parse(data[20 + k * 2])
+                        };
+                    }
+                    aTick.DateTime = DateTime.Parse(data[30] + " " + data[31]);
+                    aTick.CumVolume = double.Parse(data[8]);
+                    aTick.CumAmount = double.Parse(data[9]);
+                    ret.Add(symbol, aTick);
                 }
-                aTick.DateTime = DateTime.Parse(data[30] + " " + data[31]);
-                aTick.CumVolume = double.Parse(data[8]) ;
-                aTick.CumAmount = double.Parse(data[9]) ;
-                ret.Add(symbol, aTick);
                 i++;
             }
             return ret;
@@ -82,6 +85,11 @@ namespace TradeDataCollector
         }
 
         public override List<Trade> HistoryTradesN(string symbol, int n, string endTime = "")
+        {
+            throw new NotImplementedException();
+        }
+
+        public override List<Trade> LastDayTrades(string symbol)
         {
             throw new NotImplementedException();
         }

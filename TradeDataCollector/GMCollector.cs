@@ -151,6 +151,11 @@ namespace TradeDataCollector
             return ret;    
         }
 
+        public override List<Trade> LastDayTrades(string symbol)
+        {
+            throw new NotImplementedException();
+        }
+
         private string GetErrorMsg(int errorCode)
         {
             switch (errorCode)

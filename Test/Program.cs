@@ -74,6 +74,13 @@ namespace Test
             {
                 Console.WriteLine("{0}:{1}", kvp.Key, kvp.Value);
             }
+           
+            EastMoneyCollector ec = new EastMoneyCollector();
+            List<Trade> data1 = ec.LastDayTrades("SHSE.600025");
+            foreach (Trade trade in data1)
+            {
+                Console.WriteLine(trade.ToString());
+            }
             Console.ReadKey();
             Console.WriteLine();
         }

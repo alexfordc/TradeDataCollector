@@ -97,6 +97,11 @@ namespace TradeDataCollector
             throw new NotImplementedException();
         }
 
+        public override List<Trade> LastDayTrades(string symbol)
+        {
+            throw new NotImplementedException();
+        }
+
         private string getNeteasySymbol(string symbol)
         {
             string neteasySymbol;
