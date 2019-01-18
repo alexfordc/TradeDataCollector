@@ -44,13 +44,13 @@ namespace TradeDataCollector
                 {
                     Tick aTick = new Tick
                     {
-                        Price = float.Parse(data[3]),
-                        LastClose = float.Parse(data[4]),
-                        Open = float.Parse(data[5]),
-                        High = float.Parse(data[33]),
-                        Low = float.Parse(data[34]),
-                        UpperLimit = float.Parse(data[47]),
-                        LowerLimit = float.Parse(data[48]),
+                        Price = Utils.ParseFloat(data[3]),
+                        LastClose = Utils.ParseFloat(data[4]),
+                        Open = Utils.ParseFloat(data[5]),
+                        High = Utils.ParseFloat(data[33]),
+                        Low = Utils.ParseFloat(data[34]),
+                        UpperLimit = Utils.ParseFloat(data[47]),
+                        LowerLimit = Utils.ParseFloat(data[48]),
                         DateTime = DateTime.ParseExact(data[30], "yyyyMMddHHmmss", null) //此为快照生成时间，不是最新交易时间
                     };
                     this.dictLastTradeDate[symbol] = aTick.DateTime.Date;//当前交易日期
@@ -58,10 +58,10 @@ namespace TradeDataCollector
                     {
                         aTick.Quotes[k] = new Quote
                         {
-                            BidPrice = float.Parse(data[9 + k * 2]),
-                            BidVolume = long.Parse(data[10 + k * 2]) * 100,
-                            AskPrice = float.Parse(data[19 + k * 2]),
-                            AskVolume = long.Parse(data[20 + k * 2]) * 100
+                            BidPrice = Utils.ParseFloat(data[9 + k * 2]),
+                            BidVolume = Utils.ParseLong(data[10 + k * 2]) * 100,
+                            AskPrice = Utils.ParseFloat(data[19 + k * 2]),
+                            AskVolume = Utils.ParseLong(data[20 + k * 2]) * 100
                         };
                     }
 
@@ -74,10 +74,10 @@ namespace TradeDataCollector
                         Trade aTrade = new Trade
                         {
                             DateTime = aTick.DateTime.Date.Add(TimeSpan.Parse(temp[0])),
-                            Price = float.Parse(temp[1]),
-                            Volume = int.Parse(temp[2]) * 100,
+                            Price = Utils.ParseFloat(temp[1]),
+                            Volume = Utils.ParseInt(temp[2]) * 100,
                             BuyOrSell = temp[3][0],
-                            Amount = double.Parse(temp[4])
+                            Amount = Utils.ParseDouble(temp[4])
                         };
                         tradeQueue.Add(aTrade);
                     }
@@ -86,8 +86,8 @@ namespace TradeDataCollector
                     aTick.Amount = lastTrade.Amount;
                     aTick.BuyOrSell = lastTrade.BuyOrSell;
                     aTick.DateTime = lastTrade.DateTime;
-                    aTick.CumVolume = double.Parse(data[36]) * 100;
-                    aTick.CumAmount = double.Parse(data[37]) * 10000;
+                    aTick.CumVolume = Utils.ParseDouble(data[36]) * 100;
+                    aTick.CumAmount = Utils.ParseDouble(data[37]) * 10000;
                     ret.Add(symbol, aTick);
                 }
                 i++;
@@ -142,7 +142,7 @@ namespace TradeDataCollector
             {
                 Stream stream = this.webClient.OpenRead(url + String.Format("&p={0}", page));
                 StreamReader reader = new StreamReader(stream);
-                if ((dataString = reader.ReadToEnd()) != null)
+                if ((dataString = reader.ReadToEnd()) != "")
                 {
                     string[] tradeStrings = dataString.Split('|');
                     int len = tradeStrings.Length;
@@ -153,14 +153,15 @@ namespace TradeDataCollector
                         Trade aTrade = new Trade
                         {
                             DateTime = lastTradeDate.Add(TimeSpan.Parse(temp[1])),
-                            Price = float.Parse(temp[2]),
-                            Volume = int.Parse(temp[4]) * 100,
+                            Price = Utils.ParseFloat(temp[2]),
+                            Volume = Utils.ParseInt(temp[4]) * 100,
                             BuyOrSell = temp[6][0],
-                            Amount = double.Parse(temp[5])
+                            Amount = Utils.ParseDouble(temp[5])
                         };
                         ret.Add(aTrade);
                     }
                 }
+                else break;
                 stream.Close();
                 page++;
             } while (dataString != null);

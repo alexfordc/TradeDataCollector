@@ -9,7 +9,7 @@ namespace TradeDatacenter
     {
         public string StartTime;
         public string EndTime;
-        public List<DataMothed> DataMotheds;
+        public List<DataMethod> DataMethods;
 
         private Config() { }
 
@@ -23,7 +23,7 @@ namespace TradeDatacenter
             return con;
         }
     }
-    public class DataMothed
+    public class DataMethod
     {
         public string Name;
         public int CallInterval;

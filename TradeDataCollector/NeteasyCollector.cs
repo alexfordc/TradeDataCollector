@@ -48,11 +48,11 @@ namespace TradeDataCollector
                     JObject record =(JObject)data[this.dictGMToNeteasy[symbol]];
                     Tick aTick = new Tick
                     {
-                        Price = (float)record["price"],
-                        LastClose = (float)record["yestclose"],
-                        Open = (float)record["open"],
-                        High = (float)record["high"],
-                        Low = (float)record["low"],
+                        Price = Utils.ParseFloat((string)record["price"]),
+                        LastClose = Utils.ParseFloat((string)record["yestclose"]),
+                        Open = Utils.ParseFloat((string)record["open"]),
+                        High = Utils.ParseFloat((string)record["high"]),
+                        Low = Utils.ParseFloat((string)record["low"]),
                        // UpperLimit = float.Parse(data[47]),
                        // LowerLimit = float.Parse(data[48]),
                         DateTime = DateTime.ParseExact(record["time"].ToString(), "yyyy/MM/dd HH:mm:ss", null)
@@ -63,14 +63,14 @@ namespace TradeDataCollector
                         
                         aTick.Quotes[k] = new Quote
                         {
-                            BidPrice = (float)record[String.Format("bid{0}",k+1)],
-                            BidVolume = (long)record[String.Format("bidvol{0}", k + 1)],
-                            AskPrice = (float)record[String.Format("ask{0}", k + 1)],
-                            AskVolume = (long)record[String.Format("askvol{0}", k + 1)]
+                            BidPrice = Utils.ParseFloat((string)record[String.Format("bid{0}",k+1)]),
+                            BidVolume = Utils.ParseLong((string)record[String.Format("bidvol{0}", k + 1)]),
+                            AskPrice = Utils.ParseFloat((string)record[String.Format("ask{0}", k + 1)]),
+                            AskVolume = Utils.ParseLong((string)record[String.Format("askvol{0}", k + 1)])
                         };
                     }
-                    aTick.CumVolume = (double)record["volume"];
-                    aTick.CumAmount = (double)record["turnover"];
+                    aTick.CumVolume = Utils.ParseDouble((string)record["volume"]);
+                    aTick.CumAmount = Utils.ParseDouble((string)record["turnover"]);
                     ret.Add(symbol, aTick);
                 }
             }

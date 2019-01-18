@@ -54,5 +54,25 @@ namespace TradeDataCollector
             newSymbol = temp[1]+String.Format("{0}", marketID);
             return newSymbol;
         }
+        public static float ParseFloat(string dataStr)
+        {
+            if (float.TryParse(dataStr, out float ret)) return ret;
+            else return 0;
+        }
+        public static double ParseDouble(string dataStr)
+        {
+            if (double.TryParse(dataStr, out double ret)) return ret;
+            else return 0.0;
+        }
+        public static int ParseInt(string dataStr)
+        {
+            if (int.TryParse(dataStr, out int ret)) return ret;
+            else return 0;
+        }
+        public static long ParseLong(string dataStr)
+        {
+            if (long.TryParse(dataStr, out long ret)) return ret;
+            else return 0L;
+        }
     }
 }

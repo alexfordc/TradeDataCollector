@@ -42,26 +42,26 @@ namespace TradeDataCollector
                 {
                     Tick aTick = new Tick
                     {
-                        Price = float.Parse(data[3]),
-                        LastClose = float.Parse(data[2]),
-                        Open = float.Parse(data[1]),
-                        High = float.Parse(data[4]),
-                        Low = float.Parse(data[5]),
+                        Price = Utils.ParseFloat(data[3]),
+                        LastClose = Utils.ParseFloat(data[2]),
+                        Open = Utils.ParseFloat(data[1]),
+                        High = Utils.ParseFloat(data[4]),
+                        Low = Utils.ParseFloat(data[5]),
                     };
 
                     for (int k = 0; k < 5; k++)
                     {
                         aTick.Quotes[k] = new Quote
                         {
-                            BidPrice = float.Parse(data[11 + k * 2]),
-                            BidVolume = long.Parse(data[10 + k * 2]),
-                            AskPrice = float.Parse(data[21 + k * 2]),
-                            AskVolume = long.Parse(data[20 + k * 2])
+                            BidPrice = Utils.ParseFloat(data[11 + k * 2]),
+                            BidVolume = Utils.ParseLong(data[10 + k * 2]),
+                            AskPrice = Utils.ParseFloat(data[21 + k * 2]),
+                            AskVolume = Utils.ParseLong(data[20 + k * 2])
                         };
                     }
                     aTick.DateTime = DateTime.Parse(data[30] + " " + data[31]);
-                    aTick.CumVolume = double.Parse(data[8]);
-                    aTick.CumAmount = double.Parse(data[9]);
+                    aTick.CumVolume = Utils.ParseDouble(data[8]);
+                    aTick.CumAmount = Utils.ParseDouble(data[9]);
                     ret.Add(symbol, aTick);
                 }
                 i++;

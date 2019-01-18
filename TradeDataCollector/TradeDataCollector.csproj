@@ -86,7 +86,6 @@
     <Compile Include="FixedSizeTradeQueue.cs" />
     <Compile Include="GMCollector.cs" />
     <Compile Include="NeteasyCollector.cs" />
-    <Compile Include="PageTimeList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Quote.cs" />
     <Compile Include="SinaCollector.cs" />

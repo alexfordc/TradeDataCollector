@@ -29,47 +29,54 @@ namespace TradeDataCollector
             foreach (string symbol in symbols)
             {
                 string eastMoneySymbol = this.getEastMoneySymbol(symbol);
-                url += eastMoneySymbol ;
-                Stream stream = this.webClient.OpenRead(url);
+                Stream stream = this.webClient.OpenRead(url+eastMoneySymbol);
                 StreamReader reader = new StreamReader(stream);
                 string tickString;
-                if  ((tickString = reader.ReadLine()) != null) tickStrings.Add(tickString);
+                if ((tickString = reader.ReadLine()) != null) tickStrings.Add(tickString);
                 stream.Close();
             }
             int i = 0;
             foreach (string symbol in symbols)
             {
                 if (i >= tickStrings.Count) break;
-                string[] data = tickStrings[i].Split(',');
-                if (data[2] != symbol.Substring(5)) continue;
-                if (data.Length>=30) //保证有数据
+                string pattern = @"^callback\((.+)\)$";
+                Match mat = Regex.Match(tickStrings[i], pattern);
+                if (mat.Groups.Count > 1)
                 {
-                    Tick aTick = new Tick
+                    string json = mat.Groups[1].Value;
+                    json.Replace("-", "");
+                    JObject obj = (JObject)JsonConvert.DeserializeObject(json);
+                    JArray data = (JArray)obj["Value"];
+                    if (data.Count >= 30) //保证有数据
                     {
-                        UpperLimit = float.Parse(data[24]),
-                        LowerLimit = float.Parse(data[25]),
-                        Price = float.Parse(data[26]),
-                        Open = float.Parse(data[29]),
-                        High = float.Parse(data[31]),
-                        CumVolume = double.Parse(data[32]) * 100,
-                        Low = float.Parse(data[33]),
-                        Volume = int.Parse(data[34]) * 100,
-                        LastClose = float.Parse(data[35]),
-                        CumAmount = double.Parse(data[36]),
-                    };
-                    for (int k = 0; k < 5; k++)
-                    {
-                        aTick.Quotes[k] = new Quote
+                        if ((string)data[1] != symbol.Substring(5)) continue;
+                        Tick aTick = new Tick
                         {
-                            BidPrice = float.Parse(data[4 + k ]),
-                            BidVolume = long.Parse(data[14 + k ]) * 100,
-                            AskPrice = float.Parse(data[9 + k ]),
-                            AskVolume = long.Parse(data[19 + k ]) * 100
+                            UpperLimit = Utils.ParseFloat((string)data[23]),
+                            LowerLimit = Utils.ParseFloat((string)data[24]),
+                            Price = Utils.ParseFloat((string)data[25]),
+                            Open = Utils.ParseFloat((string)data[28]),
+                            High = Utils.ParseFloat((string)data[30]),
+                            CumVolume = Utils.ParseDouble((string)data[31]) * 100,
+                            Low = Utils.ParseFloat((string)data[32]),
+                            Volume = Utils.ParseInt((string)data[33]) * 100,
+                            LastClose = Utils.ParseFloat((string)data[34]),
+                            CumAmount = Utils.ParseDouble(((string)data[35]).Replace('万', ' '))*10000,
                         };
+                        for (int k = 0; k < 5; k++)
+                        {
+                            aTick.Quotes[k] = new Quote
+                            {
+                                BidPrice = Utils.ParseFloat((string)data[3 + k]),
+                                BidVolume = Utils.ParseLong((string)data[13 + k]) * 100,
+                                AskPrice = Utils.ParseFloat((string)data[8 + k]),
+                                AskVolume = Utils.ParseLong((string)data[18 + k]) * 100
+                            };
+                        }
+                        aTick.DateTime = DateTime.ParseExact((string)data[49], "yyyy-MM-dd HH:mm:ss", null);
+                        this.dictLastTradeDate[symbol] = aTick.DateTime.Date;//当前交易日期
+                        ret.Add(symbol, aTick);
                     }
-                    aTick.DateTime = DateTime.ParseExact(data[50], "yyyy-MM-dd HH:mm:ss", null);
-                    this.dictLastTradeDate[symbol] = aTick.DateTime.Date;//当前交易日期
-                    ret.Add(symbol,aTick);
                 }
                 i++;
             }
@@ -105,11 +112,11 @@ namespace TradeDataCollector
             Stream stream = this.webClient.OpenRead(url);
             StreamReader reader = new StreamReader(stream);
             string dataString;
-            if ((dataString = reader.ReadToEnd()) != null)
+            if ((dataString = reader.ReadToEnd()) != "")
             {
                 string pattern = @"^\((.+)\)$";
                 Match mat = Regex.Match(dataString, pattern);
-                Console.WriteLine(mat.Groups.Count);
+              
                 if (mat.Groups.Count > 1)
                 {
                     string json = mat.Groups[1].Value;
@@ -124,8 +131,8 @@ namespace TradeDataCollector
                             Trade aTrade = new Trade
                             {
                                 DateTime = lastTradeDate.Add(TimeSpan.Parse(temp[0])),
-                                Price = float.Parse(temp[1]),
-                                Volume = int.Parse(temp[2]),
+                                Price = Utils.ParseFloat((string)temp[1]),
+                                Volume = Utils.ParseInt((string)temp[2])*100,
                             };
                             switch(int.Parse(temp[3])){
                                 case 1:
@@ -165,5 +172,7 @@ namespace TradeDataCollector
             }
             return lastTradeDate;
         }
+
+        
     }
 }
