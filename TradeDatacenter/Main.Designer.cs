@@ -1,4 +1,4 @@
-﻿namespace TradeDatacenter
+﻿namespace TradeDataAccess
 {
     partial class MainForm
     {

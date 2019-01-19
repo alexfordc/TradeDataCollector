@@ -4,12 +4,12 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using StackExchange.Redis;
-namespace TradeDatacenter
+namespace TradeDataAccess
 {
-    public class StackExchangeRedisHelper
+    public class RedisHelper
     {
-        
-        private static readonly string Coonstr = Properties.Settings.Default.RedisConnString;//
+
+        private static string connStr = "localhost";
         private static object _locker = new Object();
         private static ConnectionMultiplexer _instance = null;
         /// <summary>/// 
@@ -25,26 +25,29 @@ namespace TradeDatacenter
                     {
                         if (_instance == null || !_instance.IsConnected)
                         {
-                            _instance = ConnectionMultiplexer.Connect(Coonstr);
+                            _instance = ConnectionMultiplexer.Connect(connStr);
+                            //注册如下事件
+                            _instance.ConnectionFailed += MuxerConnectionFailed;
+                            _instance.ConnectionRestored += MuxerConnectionRestored;
+                            _instance.ErrorMessage += MuxerErrorMessage;
+                            _instance.ConfigurationChanged += MuxerConfigurationChanged;
+                            _instance.HashSlotMoved += MuxerHashSlotMoved;
+                            _instance.InternalError += MuxerInternalError;
                         }
                     }
                 }
-                //注册如下事件
-                _instance.ConnectionFailed += MuxerConnectionFailed;
-                _instance.ConnectionRestored += MuxerConnectionRestored;
-                _instance.ErrorMessage += MuxerErrorMessage;
-                _instance.ConfigurationChanged += MuxerConfigurationChanged;
-                _instance.HashSlotMoved += MuxerHashSlotMoved;
-                _instance.InternalError += MuxerInternalError;
                 return _instance;
             }
         }
-        static StackExchangeRedisHelper()
+        static RedisHelper() { }
+        //必须先设置连接串，否则创建的是连接localhost的实例
+        public static void SetConnectString(string connStr)
         {
+            RedisHelper.connStr = connStr;
         }
 
         /// <summary>
-        /// 
+        /// 获取数据库
         /// </summary>
         /// <returns></returns>
         public static IDatabase GetDatabase()

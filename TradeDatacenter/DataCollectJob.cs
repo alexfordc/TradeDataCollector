@@ -7,7 +7,7 @@ using System.Threading;
 using System.Timers;
 using TradeDataCollector;
 
-namespace TradeDatacenter
+namespace TradeDataAccess
 {
     public class DataCollectJob
     {
