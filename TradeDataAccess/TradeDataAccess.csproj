@@ -120,5 +120,11 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TradeDataCollector\TradeDataCollector.csproj">
+      <Project>{08154505-df38-438a-9cb3-8e07b3f4f684}</Project>
+      <Name>TradeDataCollector</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

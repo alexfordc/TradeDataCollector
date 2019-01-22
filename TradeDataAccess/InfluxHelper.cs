@@ -9,6 +9,7 @@ using InfluxData.Net.InfluxData;
 using InfluxData.Net.InfluxDb;
 using InfluxData.Net.InfluxDb.Models;
 using InfluxData.Net.InfluxDb.Models.Responses;
+using InfluxData.Net.InfluxDb.ClientSubModules;
 
 namespace TradeDataAccess
 {
@@ -62,6 +63,21 @@ namespace TradeDataAccess
                 response = await Instance.Client.QueryAsync(query,dbName);
             }
             return response;
+        }
+        public static async Task CreateDatabaseAsync(string dbName)
+        {
+            await Instance.Database.CreateDatabaseAsync(dbName);
+        }
+        public static async Task<IEnumerable<Database>> GetDatabaseAsync()
+        {
+            IEnumerable<Database> response = await Instance.Database.GetDatabasesAsync();
+            return response;
+        }
+
+        public static IBatchWriter CreateBatchWriter(string dbName)
+        {
+            IBatchWriter batchWriter = Instance.Serie.CreateBatchWriter("yourDbName");
+            return batchWriter;
         }
     }
 }

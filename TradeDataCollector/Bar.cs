@@ -8,12 +8,14 @@ namespace TradeDataCollector
 {
     public class Bar
     {
+        public DateTime BeginTime;
+        public DateTime EndTime;
         public float LastClose;
         public float Open;
         public float High;
         public float Low;
         public float Close;
-        public float Volume;
+        public double Volume;
         public double Amount;
         public int Size;
     }

@@ -70,12 +70,61 @@ namespace TradeDataCollector
 
         public override List<Bar> HistoryBars(string symbol, int size, string startTime, string endTime="")
         {
-            throw new NotImplementedException();
+            List<Bar> ret = new List<Bar>();
+            if (endTime == "") endTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            GMDataList<GMSDK.Bar> dataList = GMApi.HistoryBars(symbol,string.Format("{0}s",size), startTime, endTime);
+            if (dataList.status != 0)
+            {
+                throw new Exception(this.GetErrorMsg(dataList.status));
+            }
+            foreach(GMSDK.Bar gmBar in dataList.data)
+            {
+                Bar aBar = new Bar()
+                {
+                    BeginTime = gmBar.bob,
+                    EndTime = gmBar.eob,
+                    LastClose = gmBar.preClose,
+                    Open = gmBar.open,
+                    High = gmBar.high,
+                    Low = gmBar.low,
+                    Close = gmBar.close,
+                    Volume = gmBar.volume,
+                    Amount = gmBar.amount,
+                    Size = size
+                };
+                ret.Add(aBar);
+            }
+            return ret;
         }
+       
 
         public override List<Bar> HistoryBarsN(string symbol, int size, int n, string endTime="")
         {
-            throw new NotImplementedException();
+            List<Bar> ret = new List<Bar>();
+            if (endTime == "") endTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            GMDataList<GMSDK.Bar> dataList = GMApi.HistoryBarsN(symbol, string.Format("{0}s", size), n, endTime);
+            if (dataList.status != 0)
+            {
+                throw new Exception(this.GetErrorMsg(dataList.status));
+            }
+            foreach (GMSDK.Bar gmBar in dataList.data)
+            {
+                Bar aBar = new Bar()
+                {
+                    BeginTime = gmBar.bob,
+                    EndTime = gmBar.eob,
+                    LastClose = gmBar.preClose,
+                    Open = gmBar.open,
+                    High = gmBar.high,
+                    Low = gmBar.low,
+                    Close = gmBar.close,
+                    Volume = gmBar.volume,
+                    Amount = gmBar.amount,
+                    Size = size
+                };
+                ret.Add(aBar);
+            }
+            return ret;
         }
 
         public override List<Trade> HistoryTrades(string symbol, string startTime, string endTime="")
