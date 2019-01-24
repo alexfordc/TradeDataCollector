@@ -7,7 +7,7 @@ using TradeDataCollector;
 using InfluxData.Net.InfluxDb.Models;
 namespace TradeDataAccess
 {
-    public class TradeDataAccess
+    public static class TradeDataAccessor
     {
         public static void SetRedisConnectString(string connStr)
         {
