@@ -55,5 +55,10 @@ namespace TradeDataAccess
         {
             this.Close();
         }
+
+        private void btnStart_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

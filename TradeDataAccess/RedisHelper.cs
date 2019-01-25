@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using StackExchange.Redis;
@@ -9,7 +10,7 @@ namespace TradeDataAccess
     public class RedisHelper
     {
 
-        private static string connStr = "localhost";
+        private static string connStr = "localhost:6379";
         private static object _locker = new Object();
         private static ConnectionMultiplexer _instance = null;
         /// <summary>/// 
@@ -251,6 +252,51 @@ namespace TradeDataAccess
              });
         }
         #endregion
+
+        /// <summary>
+        /// GetServer方法会接收一个EndPoint类或者一个唯一标识一台服务器的键值对
+        /// 有时候需要为单个服务器指定特定的命令
+        /// 使用IServer可以使用所有的shell命令，比如：
+        /// DateTime lastSave = server.LastSave();
+        /// ClientInfo[] clients = server.ClientList();
+        /// 如果报错在连接字符串后加 ,allowAdmin=true;
+        /// </summary>
+        /// <returns></returns>
+        public static IServer GetServer(string host, int port)
+        {
+            IServer server = Instance.GetServer(host, port);
+            return server;
+        }
+
+        public static IServer GetServer(EndPoint endPoint)
+        {
+            IServer server = Instance.GetServer(endPoint);
+            return server;
+        }
+        /// <summary>
+        /// 获取全部终结点
+        /// </summary>
+        /// <returns></returns>
+        public static EndPoint[] GetEndPoints()
+        {
+            EndPoint[] endpoints = Instance.GetEndPoints();
+            return endpoints;
+        }
+
+        public static List<RedisKey> GetKeys(string patternStr)
+        {
+
+            List<RedisKey> keys = new List<RedisKey>();
+            EndPoint[] endPoints = Instance.GetEndPoints();
+            foreach (EndPoint ep in endPoints)
+            {
+                foreach (RedisKey key in Instance.GetServer(ep).Keys(pattern: patternStr))
+                {
+                    keys.Add(key);
+                }
+            }
+            return keys;
+        }
     }
 }
 

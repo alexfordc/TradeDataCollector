@@ -1,9 +1,9 @@
 {
 	"StartTime":"9:20:00",
 	"EndTime":"15:05:00",
-	"DataMethods":[
+	"DataJobs":[
 		{
-			"Name":"Current",
+			"Name":"QuotationJob",
 			"CallInterval":1000,
 			"ImplementClasses":[
 				{
@@ -16,12 +16,16 @@
 				},
 				{
 					"Name":"NeteasyCollector",
-					"Weight":0.30
+					"Weight":0.20
+				},
+				{
+					"Name":"EastMoneyCollector",
+					"Weight":0.10
 				}
 			]
 		},
 		{
-			"Name":"HistoryBars",
+			"Name":"Min1Job",
 			"CallInterval":60000,
 			"ImplementClasses":[
 				{

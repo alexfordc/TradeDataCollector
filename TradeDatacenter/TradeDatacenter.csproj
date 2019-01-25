@@ -51,7 +51,7 @@
   <ItemGroup>
     <Compile Include="BaseDataJob.cs" />
     <Compile Include="Config.cs" />
-    <Compile Include="DataCollectJob.cs" />
+    <Compile Include="DataJobRunner.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>

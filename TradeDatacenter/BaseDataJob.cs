@@ -26,6 +26,6 @@ namespace TradeDatacenter
             BindingFlags flag = BindingFlags.Public | BindingFlags.Instance;
             return this.method.Invoke(this.obj, flag, Type.DefaultBinder, parameters, null);
         }
-        public abstract object Do();
+        public abstract object Execute();
     }
 }

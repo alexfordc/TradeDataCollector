@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TradeDataCollector;
+using TradeDataAccess;
 namespace Test
 {
     class Program
@@ -11,10 +12,10 @@ namespace Test
         static void Main(string[] args)
         {
 
-            string[] testSymbols = new string[] { "SZSE.002361","SZSE.888888", "SHSE.603186","SHSE.000001"};
-            //腾讯数据测试
-            Console.WriteLine("tencent testing....");
-            TencentCollector tc = new TencentCollector();
+            //string[] testSymbols = new string[] { "SZSE.002361","SZSE.888888", "SHSE.603186","SHSE.000001"};
+            ////腾讯数据测试
+            //Console.WriteLine("tencent testing....");
+            //TencentCollector tc = new TencentCollector();
             //Dictionary<string, Tick> data = tc.Current(testSymbols);
             //foreach (KeyValuePair<string, Tick> kvp in data)
             //{
@@ -22,14 +23,14 @@ namespace Test
             //}
             //Console.ReadKey();
             //Console.WriteLine();
-            List<Trade> data1 = tc.LastDayTrades("SZSE.002361");
+            //List<Trade> data1 = tc.LastDayTrades("SZSE.002361");
             //foreach (Trade trade in data1)
             //{
             //    Console.WriteLine(trade.ToString());
             //}
             //Console.ReadKey();
-            Console.WriteLine();
-            //掘金数据测试
+            //Console.WriteLine();
+            ////掘金数据测试
             //Console.WriteLine("gm testing....");
             //GMCollector gc = new GMCollector();
             //data = gc.Current(testSymbols);
@@ -61,9 +62,9 @@ namespace Test
             //    Console.WriteLine("{0}:{1}", kvp.Key, kvp.Value);
             //}
 
-            Console.WriteLine("eastmoney testing....");
-            EastMoneyCollector ec = new EastMoneyCollector();
-            data1 = ec.LastDayTrades("SZSE.002361");
+            //Console.WriteLine("eastmoney testing....");
+            //EastMoneyCollector ec = new EastMoneyCollector();
+            //data1 = ec.LastDayTrades("SZSE.002361");
             //foreach (Trade trade in data1)
             //{
             //    Console.WriteLine(trade.ToString());
@@ -74,6 +75,19 @@ namespace Test
             //    Console.WriteLine("{0}:{1}", kvp.Key, kvp.Value);
             //}
             //Console.WriteLine();
+            //Console.ReadKey();
+            //Console.WriteLine();
+            RedisHelper.Set("test1", 123);
+            RedisHelper.Set("test2", 456);
+            RedisHelper.Set("test3", 789);
+            RedisHelper.Set("sr", 321);
+
+           
+            foreach (var key in RedisHelper.GetKeys( "*test*"))
+            {
+                Console.WriteLine(key);
+            }
+            
             Console.ReadKey();
             Console.WriteLine();
         }

@@ -73,7 +73,7 @@ namespace TradeDataCollector
                                 AskVolume = Utils.ParseLong((string)data[18 + k]) * 100
                             };
                         }
-                        aTick.DateTime = DateTime.ParseExact((string)data[49], "yyyy-MM-dd HH:mm:ss", null);
+                        aTick.DateTime = Utils.StringToDateTime((string)data[49], "EASTMONEY");
                         this.dictLastTradeDate[symbol] = aTick.DateTime.Date;//当前交易日期
                         ret.Add(symbol, aTick);
                     }

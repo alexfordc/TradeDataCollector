@@ -74,5 +74,29 @@ namespace TradeDataCollector
             if (long.TryParse(dataStr, out long ret)) return ret;
             else return 0L;
         }
+
+        public static string DateTimeToString(DateTime time)
+        {
+            return time.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+        public static string DateToString(DateTime date)
+        {
+            return date.ToString("yyyy-MM-dd");
+        }
+        public static DateTime StringToDateTime(string timeStr,string key)
+        {
+            switch (key)
+            {
+                case "SINA":
+                case "EASTMONEY":
+                    return DateTime.ParseExact(timeStr, "yyyy-MM-dd HH:mm:ss", null);
+                case "NETEASY":
+                    return DateTime.ParseExact(timeStr, "yyyy/MM/dd HH:mm:ss", null);
+                case "TENCENT":
+                    return DateTime.ParseExact(timeStr, "yyyyMMddHHmmss", null);
+                default:
+                    return DateTime.Parse(timeStr);
+            }
+        }
     }
 }

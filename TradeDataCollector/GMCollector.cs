@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -71,7 +72,7 @@ namespace TradeDataCollector
         public override List<Bar> HistoryBars(string symbol, int size, string startTime, string endTime="")
         {
             List<Bar> ret = new List<Bar>();
-            if (endTime == "") endTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            if (endTime == "") endTime =Utils.DateTimeToString(DateTime.Now);
             GMDataList<GMSDK.Bar> dataList = GMApi.HistoryBars(symbol,string.Format("{0}s",size), startTime, endTime);
             if (dataList.status != 0)
             {
@@ -101,7 +102,7 @@ namespace TradeDataCollector
         public override List<Bar> HistoryBarsN(string symbol, int size, int n, string endTime="")
         {
             List<Bar> ret = new List<Bar>();
-            if (endTime == "") endTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            if (endTime == "") endTime = Utils.DateTimeToString(DateTime.Now);
             GMDataList<GMSDK.Bar> dataList = GMApi.HistoryBarsN(symbol, string.Format("{0}s", size), n, endTime);
             if (dataList.status != 0)
             {
@@ -130,7 +131,7 @@ namespace TradeDataCollector
         public override List<Trade> HistoryTrades(string symbol, string startTime, string endTime="")
         {
             List<Trade> ret=new List<Trade>();
-            if (endTime=="") endTime=DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            if (endTime == "") endTime = Utils.DateTimeToString(DateTime.Now);
             GMDataList<GMSDK.Tick> dataList=GMApi.HistoryTicks(symbol,startTime,endTime);
             if (dataList.status != 0)
             {
@@ -167,7 +168,7 @@ namespace TradeDataCollector
         public override List<Trade> HistoryTradesN(string symbol, int n, string endTime="")
         {
             List<Trade> ret=new List<Trade>();
-            if (endTime == "") endTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            if (endTime == "") endTime = Utils.DateTimeToString(DateTime.Now);
             GMDataList<GMSDK.Tick> dataList=GMApi.HistoryTicksN(symbol,n,endTime);
             if (dataList.status != 0)
             {
@@ -205,6 +206,39 @@ namespace TradeDataCollector
             throw new NotImplementedException();
         }
 
+        public DateTime GetNextTradingDate(string exchange, DateTime date)
+        {
+            GMData<DateTime> dataList = GMApi.GetNextTradingDate(exchange, Utils.DateToString(date));
+            if (dataList.status != 0)
+            {
+                throw new Exception(this.GetErrorMsg(dataList.status));
+            }
+            return dataList.data;
+        }
+        public List<Instrument> GetInstruments(string exchanges, string secTypes)
+        {
+            List<Instrument> ret = new List<Instrument>();
+            GMData<DataTable> dataList = GMApi.GetInstruments(null, exchanges, secTypes);
+            if (dataList.status == 0)
+            {
+                foreach(DataRow dr in dataList.data.Rows)
+                {
+                    Instrument inst = new Instrument
+                    {
+                        Symbol = dr["symbol"].ToString(),
+                        Level = (int)dr["sec_level"],
+                        IsSuspended = (bool)dr["is_suspended"],
+                        LastClose = (double)dr["pre_close"],
+                        UpperLimit = (double)dr["upper_limit"],
+                        LowerLimit = (double)dr["lower_limit"],
+                        AdjFactor = (double)dr["adj_factor"],
+                        CreatedAt = (DateTime)dr["created_ar"]
+                    };
+                    ret.Add(inst);
+                }
+            }else throw new Exception(this.GetErrorMsg(dataList.status));
+            return ret;
+        }
         private string GetErrorMsg(int errorCode)
         {
             switch (errorCode)
@@ -233,5 +267,6 @@ namespace TradeDataCollector
                     return "未知错误";
             }
         }
+
     }
 }

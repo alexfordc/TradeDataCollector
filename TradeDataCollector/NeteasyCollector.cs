@@ -53,9 +53,9 @@ namespace TradeDataCollector
                         Open = Utils.ParseFloat((string)record["open"]),
                         High = Utils.ParseFloat((string)record["high"]),
                         Low = Utils.ParseFloat((string)record["low"]),
-                       // UpperLimit = float.Parse(data[47]),
-                       // LowerLimit = float.Parse(data[48]),
-                        DateTime = DateTime.ParseExact(record["time"].ToString(), "yyyy/MM/dd HH:mm:ss", null)
+                        // UpperLimit = float.Parse(data[47]),
+                        // LowerLimit = float.Parse(data[48]),
+                        DateTime = Utils.StringToDateTime(record["time"].ToString(), "NETEASY")
                     };
                     
                     for (int k = 0; k < 5; k++)

@@ -9,7 +9,7 @@ namespace TradeDataAccess
     {
         public string StartTime;
         public string EndTime;
-        public List<DataMethod> DataMethods;
+        public List<DataJob> DataJobs;
 
         private Config() { }
 
@@ -23,7 +23,7 @@ namespace TradeDataAccess
             return con;
         }
     }
-    public class DataMethod
+    public class DataJob
     {
         public string Name;
         public int CallInterval;

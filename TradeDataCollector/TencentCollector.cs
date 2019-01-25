@@ -51,7 +51,7 @@ namespace TradeDataCollector
                         Low = Utils.ParseFloat(data[34]),
                         UpperLimit = Utils.ParseFloat(data[47]),
                         LowerLimit = Utils.ParseFloat(data[48]),
-                        DateTime = DateTime.ParseExact(data[30], "yyyyMMddHHmmss", null) //此为快照生成时间，不是最新交易时间
+                        DateTime = Utils.StringToDateTime(data[30], "TENCENT") //此为快照生成时间，不是最新交易时间
                     };
                     this.dictLastTradeDate[symbol] = aTick.DateTime.Date;//当前交易日期
                     for (int k = 0; k < 5; k++)

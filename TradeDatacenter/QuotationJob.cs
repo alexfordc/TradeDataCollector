@@ -11,7 +11,7 @@ namespace TradeDatacenter
     public class QuotationJob:BaseDataJob
     {
         public QuotationJob(string methodName, string className, IEnumerable<string> symbols) : base(methodName, className, symbols) { }
-        public override object Do()
+        public override object Execute()
         {
             try
             {

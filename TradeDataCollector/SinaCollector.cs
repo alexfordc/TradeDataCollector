@@ -59,7 +59,7 @@ namespace TradeDataCollector
                             AskVolume = Utils.ParseLong(data[20 + k * 2])
                         };
                     }
-                    aTick.DateTime = DateTime.Parse(data[30] + " " + data[31]);
+                    aTick.DateTime =Utils.StringToDateTime(data[30] + " " + data[31],"SINA");
                     aTick.CumVolume = Utils.ParseDouble(data[8]);
                     aTick.CumAmount = Utils.ParseDouble(data[9]);
                     ret.Add(symbol, aTick);
