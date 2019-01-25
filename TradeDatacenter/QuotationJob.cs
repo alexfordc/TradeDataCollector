@@ -10,12 +10,13 @@ namespace TradeDatacenter
 {
     public class QuotationJob:BaseDataJob
     {
-        public QuotationJob(string methodName, string className, object[] parameters) : base(methodName, className, parameters) { };
+        public QuotationJob(string methodName, string className, IEnumerable<string> symbols) : base(methodName, className, symbols) { }
         public override object Do()
         {
             try
             {
-                Dictionary<string, Tick> data = (Dictionary<string, Tick>)base.Do();
+                object[] parameters = new object[] { this.symbols };
+                Dictionary<string, Tick> data = (Dictionary<string, Tick>)this.invokeMethod(parameters);
                 TradeDataAccessor.StoreCurrentTicks(data);
                 return true;
             }catch(Exception ex)
