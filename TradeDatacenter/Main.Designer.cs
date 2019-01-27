@@ -1,4 +1,4 @@
-﻿namespace TradeDataAccess
+﻿namespace TradeDatacenter
 {
     partial class MainForm
     {
@@ -61,14 +61,14 @@
             this.showMenuItem.Name = "showMenuItem";
             this.showMenuItem.Size = new System.Drawing.Size(124, 22);
             this.showMenuItem.Text = "显示窗体";
-            this.showMenuItem.Click += new System.EventHandler(this.showMenuItem_Click);
+            this.showMenuItem.Click += new System.EventHandler(this.ShowMenuItem_Click);
             // 
             // exitMenuItem
             // 
             this.exitMenuItem.Name = "exitMenuItem";
             this.exitMenuItem.Size = new System.Drawing.Size(124, 22);
             this.exitMenuItem.Text = "退出";
-            this.exitMenuItem.Click += new System.EventHandler(this.exitMenuItem_Click);
+            this.exitMenuItem.Click += new System.EventHandler(this.ExitMenuItem_Click);
             // 
             // btnStart
             // 
@@ -78,7 +78,7 @@
             this.btnStart.TabIndex = 1;
             this.btnStart.Text = "启 动";
             this.btnStart.UseVisualStyleBackColor = true;
-            this.btnStart.Click += new System.EventHandler(this.btnStart_Click);
+            this.btnStart.Click += new System.EventHandler(this.BtnStart_Click);
             // 
             // btnStop
             // 
@@ -88,6 +88,7 @@
             this.btnStop.TabIndex = 2;
             this.btnStop.Text = "停 止";
             this.btnStop.UseVisualStyleBackColor = true;
+            this.btnStop.Click += new System.EventHandler(this.btnStop_Click);
             // 
             // label1
             // 

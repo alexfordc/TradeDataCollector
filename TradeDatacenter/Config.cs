@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using System.IO;
 
-namespace TradeDataAccess
+namespace TradeDatacenter
 {
     public class Config
     {
-        public string StartTime;
-        public string EndTime;
-        public List<DataJob> DataJobs;
+        
+        public List<DataJobConfig> DataJobConfigs;
 
         private Config() { }
 
@@ -23,16 +22,20 @@ namespace TradeDataAccess
             return con;
         }
     }
-    public class DataJob
+    public class DataJobConfig
     {
-        public string Name;
+        public string ClassName;
         public int CallInterval;
-        public List<ImplementClass> ImplementClasses;
-        
+        public string BeginTime=null;
+        public string EndTime=null;
+        public int Times=0;
+        public string TimeSpan=null;
+        public List<DataCollector> DataCollectors; 
     }
-    public class ImplementClass
+    public class DataCollector
     {
-        public string Name;
-        public float Weights;
+        public string ClassName;
+        public string MothedName;
+        public float Weight;
     }
 }

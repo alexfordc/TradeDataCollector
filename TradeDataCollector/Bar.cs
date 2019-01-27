@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace TradeDataCollector
 {
+    [Serializable]
     public class Bar
     {
         public DateTime BeginTime;

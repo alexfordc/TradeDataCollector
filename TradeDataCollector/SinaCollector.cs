@@ -8,31 +8,39 @@ using System.IO;
 
 namespace TradeDataCollector
 {
-    public class SinaCollector : BaseCollector
+    public class SinaCollector : ICollector
     {
         private WebClient webClient;
+        private int batchSize = 50;
         private Dictionary<string, string> dictGMToSina = new Dictionary<string, string>();
         public SinaCollector()
         {
             this.webClient = new WebClient();
         }
-        public override Dictionary<string, Tick> Current(IEnumerable<string> symbols)
+        public Dictionary<string, Tick> Current(IEnumerable<string> symbols)
         {
             Dictionary<string, Tick> ret = new Dictionary<string, Tick>();
-            string url = "http://hq.sinajs.cn/list=";
+            string baseUrl = "http://hq.sinajs.cn/list=";
+            int i = 0, si = 0;
+            string symbolsString = "";
+            List<string> tickStrings = new List<string>();
             foreach (string symbol in symbols)
             {
                 string sinaSymbol = this.getSinaSymbol(symbol);
-                url += sinaSymbol + ",";
+                symbolsString += sinaSymbol + ",";
+                i++;si++;
+                if (i >= this.batchSize || si >= symbols.Count())
+                {
+                    Stream stream = this.webClient.OpenRead(baseUrl+symbolsString);
+                    StreamReader reader = new StreamReader(stream);
+                    string tickString;
+                    while ((tickString = reader.ReadLine()) != null) tickStrings.Add(tickString);
+                    stream.Close();
+                    symbolsString = "";
+                    i = 0;
+                }
             }
-            List<string> tickStrings = new List<string>();
-
-            Stream stream = this.webClient.OpenRead(url);
-            StreamReader reader = new StreamReader(stream);
-            string tickString;
-            while ((tickString = reader.ReadLine()) != null) tickStrings.Add(tickString);
-            stream.Close();
-            int i = 0;
+            i = 0;
             foreach (string symbol in symbols)
             {
                 if (i >= tickStrings.Count) break;
@@ -59,7 +67,7 @@ namespace TradeDataCollector
                             AskVolume = Utils.ParseLong(data[20 + k * 2])
                         };
                     }
-                    aTick.DateTime =Utils.StringToDateTime(data[30] + " " + data[31],"SINA");
+                    aTick.DateTime = Utils.StringToDateTime(data[30] + " " + data[31], "SINA");
                     aTick.CumVolume = Utils.ParseDouble(data[8]);
                     aTick.CumAmount = Utils.ParseDouble(data[9]);
                     ret.Add(symbol, aTick);
@@ -69,27 +77,27 @@ namespace TradeDataCollector
             return ret;
         }
 
-        public override List<Bar> HistoryBars(string symbol, int size, string startTime, string endTime = "")
+        public List<Bar> HistoryBars(string symbol, int size, string startTime, string endTime = "")
         {
             throw new NotImplementedException();
         }
 
-        public override List<Bar> HistoryBarsN(string symbol, int size, int n, string endTime = "")
+        public List<Bar> HistoryBarsN(string symbol, int size, int n, string endTime = "")
         {
             throw new NotImplementedException();
         }
 
-        public override List<Trade> HistoryTrades(string symbol, string startTime, string endTime = "")
+        public List<Trade> HistoryTrades(string symbol, string startTime, string endTime = "")
         {
             throw new NotImplementedException();
         }
 
-        public override List<Trade> HistoryTradesN(string symbol, int n, string endTime = "")
+        public List<Trade> HistoryTradesN(string symbol, int n, string endTime = "")
         {
             throw new NotImplementedException();
         }
 
-        public override List<Trade> LastDayTrades(string symbol)
+        public List<Trade> LastDayTrades(string symbol)
         {
             throw new NotImplementedException();
         }

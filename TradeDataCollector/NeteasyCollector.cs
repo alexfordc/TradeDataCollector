@@ -11,9 +11,10 @@ using Newtonsoft.Json.Linq;
 
 namespace TradeDataCollector
 {
-    public class NeteasyCollector:BaseCollector
+    public class NeteasyCollector:ICollector
     {
         private WebClient webClient;
+        private int batchSize = 50;
         private Dictionary<string, string> dictGMToNeteasy = new Dictionary<string, string>();
         public NeteasyCollector()
         {
@@ -21,83 +22,94 @@ namespace TradeDataCollector
 
         }
 
-        public override Dictionary<string, Tick> Current(IEnumerable<string> symbols)
+        public Dictionary<string, Tick> Current(IEnumerable<string> symbols)
         {
             Dictionary<string, Tick> ret = new Dictionary<string, Tick>();
-            string url = "http://api.money.126.net/data/feed/";
+            string baseUrl = "http://api.money.126.net/data/feed/";
+            int i = 0, si = 0;
+            string symbolsString = "";
+            List<string> tickStrings = new List<string>();
             foreach (string symbol in symbols)
             {
                 string neteasySymbol = this.getNeteasySymbol(symbol);
-                url += neteasySymbol + ",";
-            }
-            List<string> tickStrings = new List<string>();
-            Stream stream = this.webClient.OpenRead(url);
-            StreamReader reader = new StreamReader(stream);
-            string tickString;
-            while ((tickString = reader.ReadLine()) != null) tickStrings.Add(tickString);
-            stream.Close();
-            string pattern = @"^_ntes_quote_callback\((.+)\);$";
-            Match mat = Regex.Match(tickStrings[0], pattern);
-            if (mat.Groups.Count > 1)
-            {
-                string json = mat.Groups[1].Value;
-                JObject data = (JObject)JsonConvert.DeserializeObject(json);
-                foreach (string symbol in symbols)
+                symbolsString += neteasySymbol + ",";
+                i++; si++;
+                if (i >= this.batchSize || si >= symbols.Count())
                 {
-                    if (!data.ContainsKey(this.dictGMToNeteasy[symbol])) continue;
-                    JObject record =(JObject)data[this.dictGMToNeteasy[symbol]];
-                    Tick aTick = new Tick
+                    Stream stream = this.webClient.OpenRead(baseUrl + symbolsString);
+                    StreamReader reader = new StreamReader(stream);
+                    string tickString;
+                    while ((tickString = reader.ReadLine()) != null) tickStrings.Add(tickString);
+                    stream.Close();
+                    symbolsString = "";
+                    i = 0;
+                }
+            }
+
+            string pattern = @"^_ntes_quote_callback\((.+)\);$";
+            foreach (string tickString in tickStrings)
+            {
+                Match mat = Regex.Match(tickString, pattern);
+                if (mat.Groups.Count > 1)
+                {
+                    string json = mat.Groups[1].Value;
+                    JObject data = (JObject)JsonConvert.DeserializeObject(json);
+                    foreach (string symbol in symbols)
                     {
-                        Price = Utils.ParseFloat((string)record["price"]),
-                        LastClose = Utils.ParseFloat((string)record["yestclose"]),
-                        Open = Utils.ParseFloat((string)record["open"]),
-                        High = Utils.ParseFloat((string)record["high"]),
-                        Low = Utils.ParseFloat((string)record["low"]),
-                        // UpperLimit = float.Parse(data[47]),
-                        // LowerLimit = float.Parse(data[48]),
-                        DateTime = Utils.StringToDateTime(record["time"].ToString(), "NETEASY")
-                    };
-                    
-                    for (int k = 0; k < 5; k++)
-                    {
-                        
-                        aTick.Quotes[k] = new Quote
+                        if (!data.ContainsKey(this.dictGMToNeteasy[symbol])) continue;
+                        JObject record = (JObject)data[this.dictGMToNeteasy[symbol]];
+                        Tick aTick = new Tick
                         {
-                            BidPrice = Utils.ParseFloat((string)record[String.Format("bid{0}",k+1)]),
-                            BidVolume = Utils.ParseLong((string)record[String.Format("bidvol{0}", k + 1)]),
-                            AskPrice = Utils.ParseFloat((string)record[String.Format("ask{0}", k + 1)]),
-                            AskVolume = Utils.ParseLong((string)record[String.Format("askvol{0}", k + 1)])
+                            Price = Utils.ParseFloat((string)record["price"]),
+                            LastClose = Utils.ParseFloat((string)record["yestclose"]),
+                            Open = Utils.ParseFloat((string)record["open"]),
+                            High = Utils.ParseFloat((string)record["high"]),
+                            Low = Utils.ParseFloat((string)record["low"]),
+                            // UpperLimit = float.Parse(data[47]),
+                            // LowerLimit = float.Parse(data[48]),
+                            DateTime = Utils.StringToDateTime(record["time"].ToString(), "NETEASY")
                         };
+
+                        for (int k = 0; k < 5; k++)
+                        {
+                            aTick.Quotes[k] = new Quote
+                            {
+                                BidPrice = Utils.ParseFloat((string)record[String.Format("bid{0}", k + 1)]),
+                                BidVolume = Utils.ParseLong((string)record[String.Format("bidvol{0}", k + 1)]),
+                                AskPrice = Utils.ParseFloat((string)record[String.Format("ask{0}", k + 1)]),
+                                AskVolume = Utils.ParseLong((string)record[String.Format("askvol{0}", k + 1)])
+                            };
+                        }
+                        aTick.CumVolume = Utils.ParseDouble((string)record["volume"]);
+                        aTick.CumAmount = Utils.ParseDouble((string)record["turnover"]);
+                        ret.Add(symbol, aTick);
                     }
-                    aTick.CumVolume = Utils.ParseDouble((string)record["volume"]);
-                    aTick.CumAmount = Utils.ParseDouble((string)record["turnover"]);
-                    ret.Add(symbol, aTick);
                 }
             }
             return ret;
         }
 
-        public override List<Bar> HistoryBars(string symbol, int size, string startTime, string endTime = "")
+        public List<Bar> HistoryBars(string symbol, int size, string startTime, string endTime = "")
         {
             throw new NotImplementedException();
         }
 
-        public override List<Bar> HistoryBarsN(string symbol, int size, int n, string endTime = "")
+        public List<Bar> HistoryBarsN(string symbol, int size, int n, string endTime = "")
         {
             throw new NotImplementedException();
         }
 
-        public override List<Trade> HistoryTrades(string symbol, string startTime, string endTime = "")
+        public List<Trade> HistoryTrades(string symbol, string startTime, string endTime = "")
         {
             throw new NotImplementedException();
         }
 
-        public override List<Trade> HistoryTradesN(string symbol, int n, string endTime = "")
+        public List<Trade> HistoryTradesN(string symbol, int n, string endTime = "")
         {
             throw new NotImplementedException();
         }
 
-        public override List<Trade> LastDayTrades(string symbol)
+        public List<Trade> LastDayTrades(string symbol)
         {
             throw new NotImplementedException();
         }

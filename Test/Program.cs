@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TradeDataCollector;
-using TradeDataAccess;
+using TradeDatacenter;
+using System.Reflection;
+
 namespace Test
 {
     class Program
@@ -12,8 +14,8 @@ namespace Test
         static void Main(string[] args)
         {
 
-            //string[] testSymbols = new string[] { "SZSE.002361","SZSE.888888", "SHSE.603186","SHSE.000001"};
-            ////腾讯数据测试
+            string[] testSymbols = new string[] { "SZSE.002361", "SZSE.888888", "SHSE.603186", "SHSE.000001" };
+            //腾讯数据测试
             //Console.WriteLine("tencent testing....");
             //TencentCollector tc = new TencentCollector();
             //Dictionary<string, Tick> data = tc.Current(testSymbols);
@@ -77,19 +79,20 @@ namespace Test
             //Console.WriteLine();
             //Console.ReadKey();
             //Console.WriteLine();
-            RedisHelper.Set("test1", 123);
-            RedisHelper.Set("test2", 456);
-            RedisHelper.Set("test3", 789);
-            RedisHelper.Set("sr", 321);
+            //RedisHelper.Set("test1", 123);
+            //RedisHelper.Set("test2", 456);
+            //RedisHelper.Set("test3", 789);
+            //RedisHelper.Set("sr", 321);
 
-           
-            foreach (var key in RedisHelper.GetKeys( "*test*"))
-            {
-                Console.WriteLine(key);
-            }
-            
-            Console.ReadKey();
-            Console.WriteLine();
+
+            //foreach (var key in RedisHelper.GetKeys( "*test*"))
+            //{
+            //    Console.WriteLine(key);
+            //}
+
+            //Console.ReadKey();
+            //Console.WriteLine();
+            IJob job = new Min1Job("HistoryBars", "TradeDataCollector.SinaCollector", new string[] { "SHSE.600025" }, DateTime.Today);
         }
     }
 }

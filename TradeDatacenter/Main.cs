@@ -8,11 +8,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace TradeDataAccess
+namespace TradeDatacenter
 {
     public partial class MainForm : Form
     {
         private Config config;
+        private GlobalJob gJob;
+        private JobRunner jRun;
         public MainForm()
         {
             InitializeComponent();
@@ -43,7 +45,7 @@ namespace TradeDataAccess
         
      
 
-        private void showMenuItem_Click(object sender, EventArgs e)
+        private void ShowMenuItem_Click(object sender, EventArgs e)
         {
             this.Show();
             this.ShowInTaskbar = true;
@@ -51,14 +53,24 @@ namespace TradeDataAccess
             this.myIcon.Visible = false;
         }
 
-        private void exitMenuItem_Click(object sender, EventArgs e)
+        private void ExitMenuItem_Click(object sender, EventArgs e)
         {
             this.Close();
         }
 
-        private void btnStart_Click(object sender, EventArgs e)
+        private void BtnStart_Click(object sender, EventArgs e)
         {
+            gJob = new GlobalJob(config);
+            DateTime curDay = DateTime.Today;
+            jRun = new JobRunner(1000, 1, curDay.Add(new TimeSpan(9, 15, 0)), new TimeSpan(1, 0, 0, 0));
+            jRun.AddJob(gJob);
+            jRun.Start();
+        }
 
+        private void btnStop_Click(object sender, EventArgs e)
+        {
+            jRun.Stop();
+            gJob.StopAllJobs();
         }
     }
 }

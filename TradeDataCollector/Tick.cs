@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace TradeDataCollector
 {
+    [Serializable]
     public class Tick
     {
         public DateTime DateTime;

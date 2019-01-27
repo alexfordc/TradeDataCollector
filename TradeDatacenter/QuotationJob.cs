@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TradeDataCollector;
-using TradeDataAccess;
 
 namespace TradeDatacenter
 {
-    public class QuotationJob:BaseDataJob
+    public class QuotationJob:BaseDataJob,IJob
     {
-        public QuotationJob(string methodName, string className, IEnumerable<string> symbols) : base(methodName, className, symbols) { }
-        public override object Execute()
+        public QuotationJob(string methodName, string className, IEnumerable<string> symbols,DateTime? dataDate) : base(methodName, className, symbols,dataDate) { }
+        
+        public bool Execute()
         {
             try
             {
@@ -19,12 +19,12 @@ namespace TradeDatacenter
                 Dictionary<string, Tick> data = (Dictionary<string, Tick>)this.invokeMethod(parameters);
                 TradeDataAccessor.StoreCurrentTicks(data);
                 return true;
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 return false;
             }
-
         }
     }
 }

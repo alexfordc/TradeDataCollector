@@ -5,7 +5,7 @@ using System.Net;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using StackExchange.Redis;
-namespace TradeDataAccess
+namespace TradeDatacenter
 {
     public class RedisHelper
     {

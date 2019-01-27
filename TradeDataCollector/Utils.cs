@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data;
 
 namespace TradeDataCollector
 {
@@ -96,6 +97,22 @@ namespace TradeDataCollector
                     return DateTime.ParseExact(timeStr, "yyyyMMddHHmmss", null);
                 default:
                     return DateTime.Parse(timeStr);
+            }
+        }
+
+        public static T SafeRead<T>(DataRow dataRow, string fieldName, T defaultValue)
+        {
+            try
+            {
+                object obj = dataRow[fieldName];
+                if (obj == null || obj == System.DBNull.Value)
+                    return defaultValue;
+
+                return (T)Convert.ChangeType(obj, defaultValue.GetType());
+            }
+            catch
+            {
+                return defaultValue;
             }
         }
     }

@@ -1,38 +1,46 @@
 {
-	"StartTime":"9:20:00",
-	"EndTime":"15:05:00",
-	"DataJobs":[
-		{
-			"Name":"QuotationJob",
-			"CallInterval":1000,
-			"ImplementClasses":[
-				{
-					"Name":"SinaCollector",
-					"Weight":0.40
-				},
-				{
-					"Name":"TencentCollector",
-					"Weight":0.30
-				},
-				{
-					"Name":"NeteasyCollector",
-					"Weight":0.20
-				},
-				{
-					"Name":"EastMoneyCollector",
-					"Weight":0.10
-				}
-			]
-		},
-		{
-			"Name":"Min1Job",
-			"CallInterval":60000,
-			"ImplementClasses":[
-				{
-					"Name":"GMCollector",
-					"Weight":1.0
-				}
-			]
-		}
-	]
+  "DataJobConfigs": [
+    {
+      "ClassName": "TradeDatacenter.QuotationJob",
+      "CallInterval": 1000,
+      "BeginTime": "9:20:00",
+      "EndTime": "15:03:00",
+      "DataCollectors": [
+       {
+          "ClassName": "TradeDataCollector.SinaCollector,TradeDataCollector.dll",
+          "MothedName": "Current",
+          "Weight": 0.40
+        },
+        {
+          "ClassName": "TradeDataCollector.TencentCollector,TradeDataCollector.dll",
+          "MothedName": "Current",
+          "Weight": 0.30
+        },
+        {
+          "ClassName": "TradeDataCollector.NeteasyCollector,TradeDataCollector.dll",
+          "MothedName": "Current",
+          "Weight": 0.20
+        },
+        {
+          "ClassName": "TradeDataCollector.EastMoneyCollector,TradeDataCollector.dll",
+          "MothedName": "Current",
+          "Weight": 0.10
+        }
+      ]
+    },
+    {
+      "ClassName": "TradeDatacenter.Min1Job",
+      "AssemblyName":"",
+      "CallInterval": 60000,
+      "BeginTime": "9:25:00",
+      "EndTime": "15:03:00",
+      "DataCollectors": [
+        {
+          "ClassName": "TradeDataCollector.GMCollector,TradeDataCollector.dll",
+          "MothedName": "HistoryBars",
+          "Weight": 1.0
+        }
+      ]
+    }
+  ]
 }

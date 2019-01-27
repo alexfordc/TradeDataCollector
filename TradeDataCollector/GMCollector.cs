@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 using GMSDK;
 namespace TradeDataCollector
 {
-    public class GMCollector:BaseCollector
+    public class GMCollector:ICollector
     {
         public GMCollector()
         {
             GMApi.SetToken("48da7cef9d32b7f33bf043f493c3feec4a26958b");
         }
-        public override Dictionary<string, Tick> Current(IEnumerable<string> symbols)
+        public Dictionary<string, Tick> Current(IEnumerable<string> symbols)
         {
             Dictionary<string, Tick> ret = new Dictionary<string, Tick>();
             string symbolString = "";
@@ -69,7 +69,7 @@ namespace TradeDataCollector
             return ret;
         }
 
-        public override List<Bar> HistoryBars(string symbol, int size, string startTime, string endTime="")
+        public List<Bar> HistoryBars(string symbol, int size, string startTime, string endTime="")
         {
             List<Bar> ret = new List<Bar>();
             if (endTime == "") endTime =Utils.DateTimeToString(DateTime.Now);
@@ -99,7 +99,7 @@ namespace TradeDataCollector
         }
        
 
-        public override List<Bar> HistoryBarsN(string symbol, int size, int n, string endTime="")
+        public List<Bar> HistoryBarsN(string symbol, int size, int n, string endTime="")
         {
             List<Bar> ret = new List<Bar>();
             if (endTime == "") endTime = Utils.DateTimeToString(DateTime.Now);
@@ -128,7 +128,7 @@ namespace TradeDataCollector
             return ret;
         }
 
-        public override List<Trade> HistoryTrades(string symbol, string startTime, string endTime="")
+        public List<Trade> HistoryTrades(string symbol, string startTime, string endTime="")
         {
             List<Trade> ret=new List<Trade>();
             if (endTime == "") endTime = Utils.DateTimeToString(DateTime.Now);
@@ -165,7 +165,7 @@ namespace TradeDataCollector
             return ret;    
         }
 
-        public override List<Trade> HistoryTradesN(string symbol, int n, string endTime="")
+        public List<Trade> HistoryTradesN(string symbol, int n, string endTime="")
         {
             List<Trade> ret=new List<Trade>();
             if (endTime == "") endTime = Utils.DateTimeToString(DateTime.Now);
@@ -201,7 +201,7 @@ namespace TradeDataCollector
             return ret;    
         }
 
-        public override List<Trade> LastDayTrades(string symbol)
+        public List<Trade> LastDayTrades(string symbol)
         {
             throw new NotImplementedException();
         }
@@ -227,12 +227,12 @@ namespace TradeDataCollector
                     {
                         Symbol = dr["symbol"].ToString(),
                         Level = (int)dr["sec_level"],
-                        IsSuspended = (bool)dr["is_suspended"],
-                        LastClose = (double)dr["pre_close"],
-                        UpperLimit = (double)dr["upper_limit"],
-                        LowerLimit = (double)dr["lower_limit"],
-                        AdjFactor = (double)dr["adj_factor"],
-                        CreatedAt = (DateTime)dr["created_ar"]
+                        IsSuspended = (int)dr["is_suspended"]==1,
+                        LastClose = double.Parse(dr["pre_close"].ToString()),
+                        UpperLimit = Utils.SafeRead<double>(dr,"upper_limit",0.00),
+                        LowerLimit = Utils.SafeRead<double>(dr, "lower_limit",0.00),
+                        AdjFactor = Utils.SafeRead<double>(dr, "adj_factor",0.00),
+                        CreatedAt = Utils.SafeRead<DateTime>(dr, "created_at",new DateTime(1970,1,1))
                     };
                     ret.Add(inst);
                 }

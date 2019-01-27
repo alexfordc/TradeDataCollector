@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TradeDataCollector;
 using InfluxData.Net.InfluxDb.Models;
-namespace TradeDataAccess
+namespace TradeDatacenter
 {
     public static class TradeDataAccessor
     {
@@ -16,6 +16,14 @@ namespace TradeDataAccess
         public static void SetInfluxConnectParameters(string influxUrl, string username, string password)
         {
             InfluxHelper.SetConnectParameters(influxUrl, username, password);
+        }
+        public static async void StoreInstruments(List<Instrument> instruments)
+        {
+            foreach(Instrument inst in instruments)
+            {
+                string key = inst.Symbol + ".Instrument";
+                await RedisHelper.SetAsync(key, inst);
+            }
         }
         public static async void StoreCurrentTicks(Dictionary<string,Tick> dictTicks) {
             foreach(KeyValuePair<string,Tick> kvp in dictTicks)

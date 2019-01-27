@@ -4,23 +4,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TradeDataCollector;
-using TradeDataAccess;
 
 namespace TradeDatacenter
 {
-    public class Min1Job:BaseDataJob
+    public class Min1Job:BaseDataJob,IJob
     {
         private string lastTime;
         
-        public Min1Job(string methodName, string className, IEnumerable<string> symbols) : base(methodName, className, symbols) {
-            this.lastTime = DateTime.Today.ToString("yyyy-MM-dd HH:mm:ss");
+        public Min1Job(string methodName, string className, IEnumerable<string> symbols,DateTime? dataDate) : base(methodName, className, symbols,dataDate) {
+
+            if (this.dataDate == null) this.dataDate = DateTime.Today;
+            this.lastTime = Utils.DateTimeToString((DateTime)this.dataDate);
         }
-        public override object Execute()
+        
+        public bool Execute()
         {
             try
             {
                 string beginTime = this.lastTime;
-                string endTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                string endTime = Utils.DateTimeToString(DateTime.Now);
                 foreach (string symbol in this.symbols)
                 {
                     object[] parameters = new object[] { symbol, 60, beginTime, endTime };
@@ -29,7 +31,8 @@ namespace TradeDatacenter
                 }
                 this.lastTime = endTime;
                 return true;
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 return false;

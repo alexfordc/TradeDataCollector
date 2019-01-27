@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 
 namespace TradeDataCollector
 {
-    public class EastMoneyCollector : BaseCollector
+    public class EastMoneyCollector : ICollector
     {
         private WebClient webClient;
         private Dictionary<string, string> dictGMToEastMoney = new Dictionary<string, string>();
@@ -20,7 +20,7 @@ namespace TradeDataCollector
         {
             this.webClient = new WebClient();
         }
-        public override Dictionary<string, Tick> Current(IEnumerable<string> symbols)
+        public Dictionary<string, Tick> Current(IEnumerable<string> symbols)
         {
             Dictionary<string, Tick> ret = new Dictionary<string, Tick>();
             string url = "http://nuff.eastmoney.com/EM_Finance2015TradeInterface/JS.ashx?id=";
@@ -83,27 +83,27 @@ namespace TradeDataCollector
             return ret;
         }
 
-        public override List<Bar> HistoryBars(string symbol, int size, string startTime, string endTime = "")
+        public List<Bar> HistoryBars(string symbol, int size, string startTime, string endTime = "")
         {
             throw new NotImplementedException();
         }
 
-        public override List<Bar> HistoryBarsN(string symbol, int size, int n, string endTime = "")
+        public List<Bar> HistoryBarsN(string symbol, int size, int n, string endTime = "")
         {
             throw new NotImplementedException();
         }
 
-        public override List<Trade> HistoryTrades(string symbol, string startTime, string endTime = "")
+        public List<Trade> HistoryTrades(string symbol, string startTime, string endTime = "")
         {
             throw new NotImplementedException();
         }
 
-        public override List<Trade> HistoryTradesN(string symbol, int n, string endTime = "")
+        public List<Trade> HistoryTradesN(string symbol, int n, string endTime = "")
         {
             throw new NotImplementedException();
         }
 
-        public override List<Trade> LastDayTrades(string symbol)
+        public List<Trade> LastDayTrades(string symbol)
         {
             List<Trade> ret = new List<Trade>();
             string url = "http://mdfm.eastmoney.com/EM_UBG_MinuteApi/Js/Get?dtype=all&rows=10000&id="

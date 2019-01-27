@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TradeDataAccess.Properties
+namespace TradeDatacenter.Properties
 {
 
 

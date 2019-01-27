@@ -7,9 +7,10 @@ using System.Text.RegularExpressions;
 
 namespace TradeDataCollector
 {
-    public class TencentCollector : BaseCollector
+    public class TencentCollector : ICollector
     {
         private WebClient webClient;
+        private int batchSize = 50;
         private Dictionary<string, FixedSizeTradeQueue> dictTradeCache = new Dictionary<string, FixedSizeTradeQueue>();
         private Dictionary<string, string> dictGMToTensent = new Dictionary<string, string>();
         private Dictionary<string, DateTime> dictLastTradeDate = new Dictionary<string, DateTime>();
@@ -17,24 +18,30 @@ namespace TradeDataCollector
         {
             this.webClient = new WebClient();
         }
-        public override Dictionary<string, Tick> Current(IEnumerable<string> symbols)
+        public Dictionary<string, Tick> Current(IEnumerable<string> symbols)
         {
             Dictionary<string, Tick> ret = new Dictionary<string, Tick>();
-            string url = "http://qt.gtimg.cn/q=";
+            string baseUrl = "http://qt.gtimg.cn/q=";
+            int i = 0, si = 0;
+            List<string> tickStrings = new List<string>();
+            string symbolsString = "";
             foreach (string symbol in symbols)
             {
                 string tensentSymbol = this.getTencentSymbol(symbol);
-                url += tensentSymbol + ",";
+                symbolsString += tensentSymbol + ",";
+                i++;si++;
+                if (i >= this.batchSize || si >= symbols.Count())
+                {                    
+                    Stream stream = this.webClient.OpenRead(baseUrl+symbolsString);
+                    StreamReader reader = new StreamReader(stream);
+                    string tickString;
+                    while ((tickString = reader.ReadLine()) != null) tickStrings.Add(tickString);
+                    stream.Close();
+                    symbolsString = "";
+                    i = 0;
+                }
             }
-            List<string> tickStrings = new List<string>();
-
-            Stream stream = this.webClient.OpenRead(url);
-            StreamReader reader = new StreamReader(stream);
-            string tickString;
-            while ((tickString = reader.ReadLine()) != null) tickStrings.Add(tickString);
-            stream.Close();
-
-            int i = 0;
+            i = 0;
             foreach (string symbol in symbols)
             {
                 if (i >= tickStrings.Count) break;
@@ -64,13 +71,13 @@ namespace TradeDataCollector
                             AskVolume = Utils.ParseLong(data[20 + k * 2]) * 100
                         };
                     }
-
+                    if (data[29].Length < 1) continue;
                     string[] tradeStrings = data[29].Split('|');
-                    if (tradeStrings.Length < 1) continue;
                     FixedSizeTradeQueue tradeQueue = this.getTradeQueue(symbol);
                     for (int k = tradeStrings.Length - 1; k >= 0; k--)
                     {
                         string[] temp = tradeStrings[k].Split('/');
+                        if (temp.Length < 5) continue;
                         Trade aTrade = new Trade
                         {
                             DateTime = aTick.DateTime.Date.Add(TimeSpan.Parse(temp[0])),
@@ -81,11 +88,14 @@ namespace TradeDataCollector
                         };
                         tradeQueue.Add(aTrade);
                     }
-                    Trade lastTrade = tradeQueue.LastTrade;
-                    aTick.Volume = lastTrade.Volume;
-                    aTick.Amount = lastTrade.Amount;
-                    aTick.BuyOrSell = lastTrade.BuyOrSell;
-                    aTick.DateTime = lastTrade.DateTime;
+                    if (tradeQueue.Count > 0)
+                    {
+                        Trade lastTrade = tradeQueue.LastTrade;
+                        aTick.Volume = lastTrade.Volume;
+                        aTick.Amount = lastTrade.Amount;
+                        aTick.BuyOrSell = lastTrade.BuyOrSell;
+                        aTick.DateTime = lastTrade.DateTime;
+                    }
                     aTick.CumVolume = Utils.ParseDouble(data[36]) * 100;
                     aTick.CumAmount = Utils.ParseDouble(data[37]) * 10000;
                     ret.Add(symbol, aTick);
@@ -95,17 +105,17 @@ namespace TradeDataCollector
             return ret;
         }
 
-        public override List<Bar> HistoryBars(string symbol, int size, string startTime, string endTime)
+        public List<Bar> HistoryBars(string symbol, int size, string startTime, string endTime)
         {
             throw new NotImplementedException();
         }
 
-        public override List<Bar> HistoryBarsN(string symbol, int size, int n, string endTime)
+        public List<Bar> HistoryBarsN(string symbol, int size, int n, string endTime)
         {
             throw new NotImplementedException();
         }
 
-        public override List<Trade> HistoryTrades(string symbol, string startTime, string endTime="")
+        public List<Trade> HistoryTrades(string symbol, string startTime, string endTime="")
         {
             DateTime time1 = DateTime.Parse(startTime);
             DateTime time2 = DateTime.Now;
@@ -126,11 +136,11 @@ namespace TradeDataCollector
             return ret;
         }
 
-        public override List<Trade> HistoryTradesN(string symbol, int n, string endTime="")
+        public List<Trade> HistoryTradesN(string symbol, int n, string endTime="")
         {
             throw new NotImplementedException();
         }
-        public override List<Trade> LastDayTrades(string symbol)
+        public List<Trade> LastDayTrades(string symbol)
         {
             List<Trade> ret = new List<Trade>();
             string tensentSymbol = this.getTencentSymbol(symbol);

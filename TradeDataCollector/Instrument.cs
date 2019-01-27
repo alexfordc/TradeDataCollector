@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace TradeDataCollector
 {
+    [Serializable]
     public class Instrument
     {
         public string Symbol;
