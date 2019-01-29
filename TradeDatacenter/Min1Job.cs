@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TradeDataCollector;
+using TradeDataAccess;
 
 namespace TradeDatacenter
 {
@@ -11,7 +12,7 @@ namespace TradeDatacenter
     {
         private string lastTime;
         
-        public Min1Job(string methodName, string className, IEnumerable<string> symbols,DateTime? dataDate) : base(methodName, className, symbols,dataDate) {
+        public Min1Job(string methodName, string className, IEnumerable<string> symbols,DateTime? dataDate) : base("Min1Job",methodName, className, symbols,dataDate) {
 
             if (this.dataDate == null) this.dataDate = DateTime.Today;
             this.lastTime = Utils.DateTimeToString((DateTime)this.dataDate);
@@ -27,7 +28,7 @@ namespace TradeDatacenter
                 {
                     object[] parameters = new object[] { symbol, 60, beginTime, endTime };
                     List<Bar> data = (List<Bar>)this.invokeMethod(parameters);
-                    TradeDataAccessor.Store1MinBars(symbol, data);
+                    TradeDataAccessor.StoreMin1Bars(symbol, data);
                 }
                 this.lastTime = endTime;
                 return true;

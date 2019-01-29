@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TradeDataCollector;
 using System.Reflection;
+using TradeDataAccess;
 
 namespace TradeDatacenter
 {
@@ -27,13 +28,14 @@ namespace TradeDatacenter
             DateTime curDay = DateTime.Today;
             Console.WriteLine("当前日期:{0}", curDay.ToLongDateString());
             DateTime tradeDay = gmc.GetNextTradingDate("SHSE", curDay.AddDays(-1));
-            //if (curDay == tradeDay)
-            //{
+            if (curDay == tradeDay)
+            {
                 List<Instrument> insts = new List<Instrument>();
                 insts.AddRange(gmc.GetInstruments("SHSE", "stock"));
                 insts.AddRange(gmc.GetInstruments("SZSE", "stock"));
                 TradeDataAccessor.StoreInstruments(insts);
                 List<string> symbols = insts.Where(e=>e.IsSuspended==false).Select(e => e.Symbol).ToList();
+                Console.WriteLine("今日开市证券：{0}只",symbols.Count);
                 foreach (DataJobConfig dataJobConfig in config.DataJobConfigs)
                 {
                     int i = 0;
@@ -41,7 +43,7 @@ namespace TradeDatacenter
                     foreach (DataCollector dataCollector in dataJobConfig.DataCollectors)
                     {
                         weightTotal += dataCollector.Weight;
-                        int count =Convert.ToInt32(symbols.Count * weightTotal)-i;
+                        int count =(int)Math.Round(symbols.Count * weightTotal)-i;
                         object[] parameters = new object[] { dataCollector.MothedName, dataCollector.ClassName, symbols.GetRange(i, count) , curDay };    
                         i = i + count;
                         Type type = Type.GetType(dataJobConfig.ClassName, (aName) => Assembly.LoadFrom(aName.Name),
@@ -67,11 +69,11 @@ namespace TradeDatacenter
                     }
                 }
                 foreach (JobRunner jRunner in this.jRunners) jRunner.Start();
-            //}
-            //else
-            //{
-            //    Console.WriteLine("今天不是交易日。");
-            //}
+            }
+            else
+            {
+                Console.WriteLine("今天不是交易日。");
+            }
             return true;
         }
         public void StopAllJobs()

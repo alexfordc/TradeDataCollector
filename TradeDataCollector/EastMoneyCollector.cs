@@ -26,60 +26,69 @@ namespace TradeDataCollector
             string url = "http://nuff.eastmoney.com/EM_Finance2015TradeInterface/JS.ashx?id=";
             List<string> tickStrings = new List<string>();
             //只能一个个的请求，无法成批发送请求
-            foreach (string symbol in symbols)
+            try
             {
-                string eastMoneySymbol = this.getEastMoneySymbol(symbol);
-                Stream stream = this.webClient.OpenRead(url+eastMoneySymbol);
-                StreamReader reader = new StreamReader(stream);
-                string tickString;
-                if ((tickString = reader.ReadLine()) != null) tickStrings.Add(tickString);
-                stream.Close();
-            }
-            int i = 0;
-            foreach (string symbol in symbols)
-            {
-                if (i >= tickStrings.Count) break;
-                string pattern = @"^callback\((.+)\)$";
-                Match mat = Regex.Match(tickStrings[i], pattern);
-                if (mat.Groups.Count > 1)
+                foreach (string symbol in symbols)
                 {
-                    string json = mat.Groups[1].Value;
-                    json.Replace("-", "");
-                    JObject obj = (JObject)JsonConvert.DeserializeObject(json);
-                    JArray data = (JArray)obj["Value"];
-                    if (data.Count >= 30) //保证有数据
-                    {
-                        if ((string)data[1] != symbol.Substring(5)) continue;
-                        Tick aTick = new Tick
-                        {
-                            UpperLimit = Utils.ParseFloat((string)data[23]),
-                            LowerLimit = Utils.ParseFloat((string)data[24]),
-                            Price = Utils.ParseFloat((string)data[25]),
-                            Open = Utils.ParseFloat((string)data[28]),
-                            High = Utils.ParseFloat((string)data[30]),
-                            CumVolume = Utils.ParseDouble((string)data[31]) * 100,
-                            Low = Utils.ParseFloat((string)data[32]),
-                            Volume = Utils.ParseInt((string)data[33]) * 100,
-                            LastClose = Utils.ParseFloat((string)data[34]),
-                            CumAmount = Utils.ParseDouble(((string)data[35]).Replace('万', ' '))*10000,
-                        };
-                        for (int k = 0; k < 5; k++)
-                        {
-                            aTick.Quotes[k] = new Quote
-                            {
-                                BidPrice = Utils.ParseFloat((string)data[3 + k]),
-                                BidVolume = Utils.ParseLong((string)data[13 + k]) * 100,
-                                AskPrice = Utils.ParseFloat((string)data[8 + k]),
-                                AskVolume = Utils.ParseLong((string)data[18 + k]) * 100
-                            };
-                        }
-                        aTick.DateTime = Utils.StringToDateTime((string)data[49], "EASTMONEY");
-                        this.dictLastTradeDate[symbol] = aTick.DateTime.Date;//当前交易日期
-                        ret.Add(symbol, aTick);
-                    }
+                    string eastMoneySymbol = this.getEastMoneySymbol(symbol);
+                    Stream stream = this.webClient.OpenRead(url + eastMoneySymbol);
+                    StreamReader reader = new StreamReader(stream);
+                    string tickString;
+                    if ((tickString = reader.ReadLine()) != null) tickStrings.Add(tickString);
+                    stream.Close();
                 }
-                i++;
+                int i = 0;
+                foreach (string symbol in symbols)
+                {
+                    if (i >= tickStrings.Count) break;
+                    string pattern = @"^callback\((.+)\)$";
+                    Match mat = Regex.Match(tickStrings[i], pattern);
+                    if (mat.Groups.Count > 1)
+                    {
+                        string json = mat.Groups[1].Value;
+                        json.Replace("-", "");
+                        JObject obj = (JObject)JsonConvert.DeserializeObject(json);
+                        JArray data = (JArray)obj["Value"];
+                        if (data.Count >= 30) //保证有数据
+                        {
+                            if ((string)data[1] != symbol.Substring(5)) continue;
+                            Tick aTick = new Tick
+                            {
+                                UpperLimit = Utils.ParseFloat((string)data[23]),
+                                LowerLimit = Utils.ParseFloat((string)data[24]),
+                                Price = Utils.ParseFloat((string)data[25]),
+                                Open = Utils.ParseFloat((string)data[28]),
+                                High = Utils.ParseFloat((string)data[30]),
+                                CumVolume = Utils.ParseDouble((string)data[31]) * 100,
+                                Low = Utils.ParseFloat((string)data[32]),
+                                Volume = Utils.ParseInt((string)data[33]) * 100,
+                                LastClose = Utils.ParseFloat((string)data[34]),
+                                CumAmount = Utils.ParseDouble(((string)data[35]).Replace('万', ' ')) * 10000,
+                            };
+                            for (int k = 0; k < 5; k++)
+                            {
+                                aTick.Quotes[k] = new Quote
+                                {
+                                    BidPrice = Utils.ParseFloat((string)data[3 + k]),
+                                    BidVolume = Utils.ParseLong((string)data[13 + k]) * 100,
+                                    AskPrice = Utils.ParseFloat((string)data[8 + k]),
+                                    AskVolume = Utils.ParseLong((string)data[18 + k]) * 100
+                                };
+                            }
+                            aTick.DateTime = Utils.StringToDateTime((string)data[49], "EASTMONEY");
+                            this.dictLastTradeDate[symbol] = aTick.DateTime.Date;//当前交易日期
+                            aTick.Source = "EastMoney";
+                            ret.Add(symbol, aTick);
+                        }
+                    }
+                    i++;
+                }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine("{0}的{1}发生错误：{2}", ex.Source, ex.TargetSite.Name, ex.Message);
+            }
+            
             return ret;
         }
 

@@ -64,6 +64,7 @@ namespace TradeDataCollector
                         aTick.BuyOrSell = 'N';
                         break;
                 }
+                aTick.Source = "GM";
                 ret.Add(gmTick.symbol, aTick);
             }
             return ret;

@@ -39,6 +39,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.txtLog = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.BtnDisplay = new System.Windows.Forms.Button();
             this.myMenu.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -93,7 +94,7 @@
             // label1
             // 
             this.label1.Font = new System.Drawing.Font("宋体", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.label1.Location = new System.Drawing.Point(528, 157);
+            this.label1.Location = new System.Drawing.Point(528, 253);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(105, 51);
             this.label1.TabIndex = 3;
@@ -118,11 +119,22 @@
             this.label2.TabIndex = 5;
             this.label2.Text = "运行日志：";
             // 
+            // BtnDisplay
+            // 
+            this.BtnDisplay.Location = new System.Drawing.Point(531, 165);
+            this.BtnDisplay.Name = "BtnDisplay";
+            this.BtnDisplay.Size = new System.Drawing.Size(102, 35);
+            this.BtnDisplay.TabIndex = 6;
+            this.BtnDisplay.Text = "查看数据";
+            this.BtnDisplay.UseVisualStyleBackColor = true;
+            this.BtnDisplay.Click += new System.EventHandler(this.BtnDisplay_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(645, 322);
+            this.Controls.Add(this.BtnDisplay);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.txtLog);
             this.Controls.Add(this.label1);
@@ -149,6 +161,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox txtLog;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button BtnDisplay;
     }
 }
 

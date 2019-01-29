@@ -72,5 +72,11 @@ namespace TradeDatacenter
             jRun.Stop();
             gJob.StopAllJobs();
         }
+
+        private void BtnDisplay_Click(object sender, EventArgs e)
+        {
+            Form displayForm = new DisplayForm();
+            displayForm.Show();
+        }
     }
 }

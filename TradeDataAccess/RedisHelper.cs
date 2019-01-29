@@ -5,11 +5,10 @@ using System.Net;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using StackExchange.Redis;
-namespace TradeDatacenter
+namespace TradeDataAccess
 {
     public class RedisHelper
     {
-
         private static string connStr = "localhost:6379";
         private static object _locker = new Object();
         private static ConnectionMultiplexer _instance = null;
@@ -283,16 +282,16 @@ namespace TradeDatacenter
             return endpoints;
         }
 
-        public static List<RedisKey> GetKeys(string patternStr)
+        public static List<string> GetKeys(string patternStr)
         {
 
-            List<RedisKey> keys = new List<RedisKey>();
+            List<string> keys = new List<string>();
             EndPoint[] endPoints = Instance.GetEndPoints();
             foreach (EndPoint ep in endPoints)
             {
                 foreach (RedisKey key in Instance.GetServer(ep).Keys(pattern: patternStr))
                 {
-                    keys.Add(key);
+                    keys.Add(key.ToString());
                 }
             }
             return keys;

@@ -29,62 +29,69 @@ namespace TradeDataCollector
             int i = 0, si = 0;
             string symbolsString = "";
             List<string> tickStrings = new List<string>();
-            foreach (string symbol in symbols)
+            try
             {
-                string neteasySymbol = this.getNeteasySymbol(symbol);
-                symbolsString += neteasySymbol + ",";
-                i++; si++;
-                if (i >= this.batchSize || si >= symbols.Count())
+                foreach (string symbol in symbols)
                 {
-                    Stream stream = this.webClient.OpenRead(baseUrl + symbolsString);
-                    StreamReader reader = new StreamReader(stream);
-                    string tickString;
-                    while ((tickString = reader.ReadLine()) != null) tickStrings.Add(tickString);
-                    stream.Close();
-                    symbolsString = "";
-                    i = 0;
-                }
-            }
-
-            string pattern = @"^_ntes_quote_callback\((.+)\);$";
-            foreach (string tickString in tickStrings)
-            {
-                Match mat = Regex.Match(tickString, pattern);
-                if (mat.Groups.Count > 1)
-                {
-                    string json = mat.Groups[1].Value;
-                    JObject data = (JObject)JsonConvert.DeserializeObject(json);
-                    foreach (string symbol in symbols)
+                    string neteasySymbol = this.getNeteasySymbol(symbol);
+                    symbolsString += neteasySymbol + ",";
+                    i++; si++;
+                    if (i >= this.batchSize || si >= symbols.Count())
                     {
-                        if (!data.ContainsKey(this.dictGMToNeteasy[symbol])) continue;
-                        JObject record = (JObject)data[this.dictGMToNeteasy[symbol]];
-                        Tick aTick = new Tick
-                        {
-                            Price = Utils.ParseFloat((string)record["price"]),
-                            LastClose = Utils.ParseFloat((string)record["yestclose"]),
-                            Open = Utils.ParseFloat((string)record["open"]),
-                            High = Utils.ParseFloat((string)record["high"]),
-                            Low = Utils.ParseFloat((string)record["low"]),
-                            // UpperLimit = float.Parse(data[47]),
-                            // LowerLimit = float.Parse(data[48]),
-                            DateTime = Utils.StringToDateTime(record["time"].ToString(), "NETEASY")
-                        };
-
-                        for (int k = 0; k < 5; k++)
-                        {
-                            aTick.Quotes[k] = new Quote
-                            {
-                                BidPrice = Utils.ParseFloat((string)record[String.Format("bid{0}", k + 1)]),
-                                BidVolume = Utils.ParseLong((string)record[String.Format("bidvol{0}", k + 1)]),
-                                AskPrice = Utils.ParseFloat((string)record[String.Format("ask{0}", k + 1)]),
-                                AskVolume = Utils.ParseLong((string)record[String.Format("askvol{0}", k + 1)])
-                            };
-                        }
-                        aTick.CumVolume = Utils.ParseDouble((string)record["volume"]);
-                        aTick.CumAmount = Utils.ParseDouble((string)record["turnover"]);
-                        ret.Add(symbol, aTick);
+                        Stream stream = this.webClient.OpenRead(baseUrl + symbolsString);
+                        StreamReader reader = new StreamReader(stream);
+                        string tickString;
+                        while ((tickString = reader.ReadLine()) != null) tickStrings.Add(tickString);
+                        stream.Close();
+                        symbolsString = "";
+                        i = 0;
                     }
                 }
+                string pattern = @"^_ntes_quote_callback\((.+)\);$";
+                foreach (string tickString in tickStrings)
+                {
+                    Match mat = Regex.Match(tickString, pattern);
+                    if (mat.Groups.Count > 1)
+                    {
+                        string json = mat.Groups[1].Value;
+                        JObject data = (JObject)JsonConvert.DeserializeObject(json);
+                        foreach (string symbol in symbols)
+                        {
+                            if (!data.ContainsKey(this.dictGMToNeteasy[symbol])) continue;
+                            JObject record = (JObject)data[this.dictGMToNeteasy[symbol]];
+                            Tick aTick = new Tick
+                            {
+                                Price = Utils.ParseFloat((string)record["price"]),
+                                LastClose = Utils.ParseFloat((string)record["yestclose"]),
+                                Open = Utils.ParseFloat((string)record["open"]),
+                                High = Utils.ParseFloat((string)record["high"]),
+                                Low = Utils.ParseFloat((string)record["low"]),
+                                // UpperLimit = float.Parse(data[47]),
+                                // LowerLimit = float.Parse(data[48]),
+                                DateTime = Utils.StringToDateTime(record["time"].ToString(), "NETEASY")
+                            };
+
+                            for (int k = 0; k < 5; k++)
+                            {
+                                aTick.Quotes[k] = new Quote
+                                {
+                                    BidPrice = Utils.ParseFloat((string)record[String.Format("bid{0}", k + 1)]),
+                                    BidVolume = Utils.ParseLong((string)record[String.Format("bidvol{0}", k + 1)]),
+                                    AskPrice = Utils.ParseFloat((string)record[String.Format("ask{0}", k + 1)]),
+                                    AskVolume = Utils.ParseLong((string)record[String.Format("askvol{0}", k + 1)])
+                                };
+                            }
+                            aTick.CumVolume = Utils.ParseDouble((string)record["volume"]);
+                            aTick.CumAmount = Utils.ParseDouble((string)record["turnover"]);
+                            aTick.Source = "Neteasy";
+                            ret.Add(symbol, aTick);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("{0}的{1}发生错误：{2}", ex.Source, ex.TargetSite.Name, ex.Message);
             }
             return ret;
         }

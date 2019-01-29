@@ -39,7 +39,10 @@ namespace TradeDatacenter
             bool success = true;
             foreach(IJob job in this.jobs)
             {
-                Console.WriteLine("job {0} begin...", job.GetType().Name);
+                string jobName = "";
+                if (job is BaseDataJob) jobName = (job as BaseDataJob).JobName;
+                else jobName = job.GetType().Name;
+                Console.WriteLine("Do job {0} ...", jobName);
                 if (!job.Execute())
                 {
                     success = false;

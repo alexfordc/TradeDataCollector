@@ -11,7 +11,7 @@ using InfluxData.Net.InfluxDb.Models;
 using InfluxData.Net.InfluxDb.Models.Responses;
 using InfluxData.Net.InfluxDb.ClientSubModules;
 
-namespace TradeDatacenter
+namespace TradeDataAccess
 {
     public class InfluxHelper
     {
@@ -31,7 +31,7 @@ namespace TradeDatacenter
                     {
                         if (_instance == null)
                         {
-                            _instance = new InfluxDbClient(influxUrl, username, password, InfluxDbVersion.v_1_3);
+                            _instance = new InfluxDbClient(influxUrl, username, password, InfluxDbVersion.Latest);
                         }
                     }
                 }
@@ -51,16 +51,16 @@ namespace TradeDatacenter
         {
             await Instance.Client.WriteAsync(pointToWrite,dbName);
         }
-        public static async Task<IEnumerable<Serie>> QueryAsync(string query,string dbName,object parameters=null)
+        public static IEnumerable<Serie> QueryAsync(string query,string dbName,object parameters=null)
         {
             IEnumerable<Serie> response;
             if (parameters != null)
             {
-                response = await Instance.Client.QueryAsync(query,parameters,dbName);
-
-            }else
+                response = Instance.Client.QueryAsync(query,parameters,dbName).Result;
+            }
+            else
             {
-                response = await Instance.Client.QueryAsync(query,dbName);
+                response = Instance.Client.QueryAsync(query,dbName).Result;
             }
             return response;
         }
@@ -73,7 +73,6 @@ namespace TradeDatacenter
             IEnumerable<Database> response = await Instance.Database.GetDatabasesAsync();
             return response;
         }
-
         public static IBatchWriter CreateBatchWriter(string dbName)
         {
             IBatchWriter batchWriter = Instance.Serie.CreateBatchWriter("yourDbName");

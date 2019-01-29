@@ -5,7 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using TradeDataCollector;
 using InfluxData.Net.InfluxDb.Models;
-namespace TradeDatacenter
+using InfluxData.Net.InfluxDb.Models.Responses;
+namespace TradeDataAccess
 {
     public static class TradeDataAccessor
     {
@@ -47,12 +48,12 @@ namespace TradeDatacenter
                     {
                         {"Symbol",symbol }
                     },
-                    Timestamp=aTrade.DateTime.ToUniversalTime(),
+                    Timestamp=aTrade.DateTime
                 };
                 await InfluxHelper.WriteAsync(aPoint, "Finance");
             }
         }
-        public static async void Store1MinBars(string symbol,List<Bar> bars) {
+        public static async void StoreMin1Bars(string symbol,List<Bar> bars) {
             foreach(Bar aBar in bars)
             {
                 Point aPoint = new Point
@@ -72,12 +73,12 @@ namespace TradeDatacenter
                     {
                         {"Symbol",symbol }
                     },
-                    Timestamp = aBar.BeginTime.ToUniversalTime()
+                    Timestamp = aBar.BeginTime
                 };
                 await InfluxHelper.WriteAsync(aPoint, "Finance");
             }
         }
-        public static async void Store1DayBars(string symbol, List<Bar> bars) {
+        public static async void StoreDay1Bars(string symbol, List<Bar> bars) {
             foreach (Bar aBar in bars)
             {
                 Point aPoint = new Point
@@ -97,10 +98,57 @@ namespace TradeDatacenter
                     {
                         {"Symbol",symbol }
                     },
-                    Timestamp = aBar.BeginTime.ToUniversalTime()
+                    Timestamp = aBar.BeginTime
                 };
                 await InfluxHelper.WriteAsync(aPoint, "Finance");
             }
+        }
+
+        public static List<Instrument> GetInstruments()
+        {
+            List<Instrument> ret = new List<Instrument>();
+            List<string> keys = RedisHelper.GetKeys("??SE.??????.Instrument");
+            foreach(string key in keys)
+            {
+                ret.Add((Instrument)RedisHelper.Get(key));
+            }
+            return ret;
+        }
+        public static Dictionary<string,Tick> GetCurrentTicks()
+        {
+            Dictionary<string, Tick> ret = new Dictionary<string, Tick>();
+            List<string> keys = RedisHelper.GetKeys("??SE.??????");
+            foreach (string key in keys)
+            {
+                ret.Add(key, (Tick)RedisHelper.Get(key));
+            }
+            return ret;
+        }
+        public static List<Bar> GetMin1Bars(string symbol)
+        {
+            string query =string.Format("select * from \"Bar.60\" where \"Symbol\"=\'{0}\'",symbol);
+            IEnumerable<Serie> series=InfluxHelper.QueryAsync(query, "Finance");
+            List<Bar> ret = new List<Bar>();
+            foreach(Serie serie in series)
+            {
+                foreach(var value in serie.Values)
+                {
+                    Bar aBar = new Bar
+                    {
+                        BeginTime = Convert.ToDateTime(value[0]),
+                        Amount = Utils.ParseDouble(value[1].ToString()),
+                        Close = Utils.ParseFloat(value[2].ToString()),
+                        High = Utils.ParseFloat(value[3].ToString()),
+                        LastClose = Utils.ParseFloat(value[4].ToString()),
+                        Low = Utils.ParseFloat(value[5].ToString()),
+                        Open = Utils.ParseFloat(value[6].ToString()),
+                        Volume = Utils.ParseDouble(value[8].ToString()),
+                        Size = 60
+                    };
+                    ret.Add(aBar);
+                }
+            }
+            return ret;
         }
     }
 }

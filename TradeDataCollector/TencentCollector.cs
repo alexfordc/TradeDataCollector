@@ -10,7 +10,7 @@ namespace TradeDataCollector
     public class TencentCollector : ICollector
     {
         private WebClient webClient;
-        private int batchSize = 50;
+        private int batchSize = 100;
         private Dictionary<string, FixedSizeTradeQueue> dictTradeCache = new Dictionary<string, FixedSizeTradeQueue>();
         private Dictionary<string, string> dictGMToTensent = new Dictionary<string, string>();
         private Dictionary<string, DateTime> dictLastTradeDate = new Dictionary<string, DateTime>();
@@ -25,83 +25,95 @@ namespace TradeDataCollector
             int i = 0, si = 0;
             List<string> tickStrings = new List<string>();
             string symbolsString = "";
-            foreach (string symbol in symbols)
+            try
             {
-                string tensentSymbol = this.getTencentSymbol(symbol);
-                symbolsString += tensentSymbol + ",";
-                i++;si++;
-                if (i >= this.batchSize || si >= symbols.Count())
-                {                    
-                    Stream stream = this.webClient.OpenRead(baseUrl+symbolsString);
-                    StreamReader reader = new StreamReader(stream);
-                    string tickString;
-                    while ((tickString = reader.ReadLine()) != null) tickStrings.Add(tickString);
-                    stream.Close();
-                    symbolsString = "";
-                    i = 0;
-                }
-            }
-            i = 0;
-            foreach (string symbol in symbols)
-            {
-                if (i >= tickStrings.Count) break;
-                string[] data = tickStrings[i].Split('~');
-                if (!data[0].Contains(this.dictGMToTensent[symbol])) continue;
-                if (data.Length >= 48)//保证有数据
+                foreach (string symbol in symbols)
                 {
-                    Tick aTick = new Tick
+                    string tensentSymbol = this.getTencentSymbol(symbol);
+                    symbolsString += tensentSymbol + ",";
+                    i++; si++;
+                    if (i >= this.batchSize || si >= symbols.Count())
                     {
-                        Price = Utils.ParseFloat(data[3]),
-                        LastClose = Utils.ParseFloat(data[4]),
-                        Open = Utils.ParseFloat(data[5]),
-                        High = Utils.ParseFloat(data[33]),
-                        Low = Utils.ParseFloat(data[34]),
-                        UpperLimit = Utils.ParseFloat(data[47]),
-                        LowerLimit = Utils.ParseFloat(data[48]),
-                        DateTime = Utils.StringToDateTime(data[30], "TENCENT") //此为快照生成时间，不是最新交易时间
-                    };
-                    this.dictLastTradeDate[symbol] = aTick.DateTime.Date;//当前交易日期
-                    for (int k = 0; k < 5; k++)
-                    {
-                        aTick.Quotes[k] = new Quote
-                        {
-                            BidPrice = Utils.ParseFloat(data[9 + k * 2]),
-                            BidVolume = Utils.ParseLong(data[10 + k * 2]) * 100,
-                            AskPrice = Utils.ParseFloat(data[19 + k * 2]),
-                            AskVolume = Utils.ParseLong(data[20 + k * 2]) * 100
-                        };
+                        Stream stream = this.webClient.OpenRead(baseUrl + symbolsString);
+                        StreamReader reader = new StreamReader(stream);
+                        string tickString;
+                        while ((tickString = reader.ReadLine()) != null) tickStrings.Add(tickString);
+                        stream.Close();
+                        symbolsString = "";
+                        i = 0;
                     }
-                    if (data[29].Length < 1) continue;
-                    string[] tradeStrings = data[29].Split('|');
-                    FixedSizeTradeQueue tradeQueue = this.getTradeQueue(symbol);
-                    for (int k = tradeStrings.Length - 1; k >= 0; k--)
-                    {
-                        string[] temp = tradeStrings[k].Split('/');
-                        if (temp.Length < 5) continue;
-                        Trade aTrade = new Trade
-                        {
-                            DateTime = aTick.DateTime.Date.Add(TimeSpan.Parse(temp[0])),
-                            Price = Utils.ParseFloat(temp[1]),
-                            Volume = Utils.ParseInt(temp[2]) * 100,
-                            BuyOrSell = temp[3][0],
-                            Amount = Utils.ParseDouble(temp[4])
-                        };
-                        tradeQueue.Add(aTrade);
-                    }
-                    if (tradeQueue.Count > 0)
-                    {
-                        Trade lastTrade = tradeQueue.LastTrade;
-                        aTick.Volume = lastTrade.Volume;
-                        aTick.Amount = lastTrade.Amount;
-                        aTick.BuyOrSell = lastTrade.BuyOrSell;
-                        aTick.DateTime = lastTrade.DateTime;
-                    }
-                    aTick.CumVolume = Utils.ParseDouble(data[36]) * 100;
-                    aTick.CumAmount = Utils.ParseDouble(data[37]) * 10000;
-                    ret.Add(symbol, aTick);
                 }
-                i++;
+             
+                i = 0;
+                foreach (string symbol in symbols)
+                {
+                    if (i >= tickStrings.Count) break;
+                    string[] data = tickStrings[i].Split('~');
+                    if (!data[0].Contains(this.dictGMToTensent[symbol])) continue;
+                    if (data.Length >= 40)//保证有数据
+                    {
+                        Tick aTick = new Tick
+                        {
+                            Price = Utils.ParseFloat(data[3]),
+                            LastClose = Utils.ParseFloat(data[4]),
+                            Open = Utils.ParseFloat(data[5]),
+                            High = Utils.ParseFloat(data[33]),
+                            Low = Utils.ParseFloat(data[34]),
+                            UpperLimit = Utils.ParseFloat(data[47]),
+                            LowerLimit = Utils.ParseFloat(data[48]),
+                            DateTime = Utils.StringToDateTime(data[30], "TENCENT") //此为快照生成时间，不是最新交易时间
+                        };
+                        this.dictLastTradeDate[symbol] = aTick.DateTime.Date;//当前交易日期
+                        for (int k = 0; k < 5; k++)
+                        {
+                            aTick.Quotes[k] = new Quote
+                            {
+                                BidPrice = Utils.ParseFloat(data[9 + k * 2]),
+                                BidVolume = Utils.ParseLong(data[10 + k * 2]) * 100,
+                                AskPrice = Utils.ParseFloat(data[19 + k * 2]),
+                                AskVolume = Utils.ParseLong(data[20 + k * 2]) * 100
+                            };
+                        }
+                        if (data[29].Length > 1)
+                        {
+                            string[] tradeStrings = data[29].Split('|');
+                            FixedSizeTradeQueue tradeQueue = this.getTradeQueue(symbol);
+                            for (int k = tradeStrings.Length - 1; k >= 0; k--)
+                            {
+                                string[] temp = tradeStrings[k].Split('/');
+                                if (temp.Length < 5) continue;
+                                Trade aTrade = new Trade
+                                {
+                                    DateTime = aTick.DateTime.Date.Add(TimeSpan.Parse(temp[0])),
+                                    Price = Utils.ParseFloat(temp[1]),
+                                    Volume = Utils.ParseInt(temp[2]) * 100,
+                                    BuyOrSell = temp[3][0],
+                                    Amount = Utils.ParseDouble(temp[4])
+                                };
+                                tradeQueue.Add(aTrade);
+                            }
+                            if (tradeQueue.Count > 0)
+                            {
+                                Trade lastTrade = tradeQueue.LastTrade;
+                                aTick.Volume = lastTrade.Volume;
+                                aTick.Amount = lastTrade.Amount;
+                                aTick.BuyOrSell = lastTrade.BuyOrSell;
+                                aTick.DateTime = lastTrade.DateTime;
+                            }
+                        }
+                        aTick.CumVolume = Utils.ParseDouble(data[36]) * 100;
+                        aTick.CumAmount = Utils.ParseDouble(data[37]) * 10000;
+                        aTick.Source = "Tencent";
+                        ret.Add(symbol, aTick);
+                    }
+                    i++;
+                }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine("{0}的{1}发生错误：{2}",ex.Source,ex.TargetSite.Name,ex.Message);
+            }
+            
             return ret;
         }
 

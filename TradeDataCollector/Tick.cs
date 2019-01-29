@@ -23,7 +23,7 @@ namespace TradeDataCollector
         public float UpperLimit;//涨停价
         public float LowerLimit;//跌停价
         public Quote[] Quotes=new Quote[5];//五档报价
-
+        public string Source;
         public override string ToString()
         {
             string str = String.Format("DateTime:{0},LastClose:{1},Open:{2},High:{3},Low:{4},Price:{5}," +
