@@ -4,31 +4,28 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
+using HuaQuant.JobSchedule;
 
-namespace TradeDatacenter
+namespace HuaQuant.TradeDatacenter
 {
-    public abstract class BaseDataJob
+    public abstract class BaseDataJob:Job
     {
         protected Type type;
         protected MethodInfo method;
         protected object obj;
         protected IEnumerable<string> symbols;
         protected DateTime? dataDate;
-        protected string jobName;
-        public string JobName
-        {
-            get { return this.jobName; }
-        }
-        public BaseDataJob(string jobName,string methodName, string className,IEnumerable<string> symbols, DateTime? dataDate=null)
+        public BaseDataJob(string name,string methodName, string className,IEnumerable<string> symbols, 
+            DateTime? dataDate=null, Job[] needJobs = null):base(name,needJobs)
         {
             
             this.type = Type.GetType(className, (aName) => Assembly.LoadFrom(aName.Name),
-            (assem, name, ignore) => assem == null ? Type.GetType(name, false, ignore) :assem.GetType(name, false, ignore));
+            (assem, mName, ignore) => assem == null ? Type.GetType(mName, false, ignore) :assem.GetType(mName, false, ignore));
             this.method = this.type.GetMethod(methodName);
             this.obj = Activator.CreateInstance(this.type);
             this.symbols = symbols;
             this.dataDate = dataDate;
-            this.jobName = string.Format("{0}[{1}-{2}]",jobName,type.Name,methodName);
+            this.Name = string.Format("{0}[{1}-{2}]",name,type.Name,methodName);
         }
         protected object invokeMethod(object[] parameters)
         {

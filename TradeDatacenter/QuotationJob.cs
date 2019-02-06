@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TradeDataCollector;
-using TradeDataAccess;
+using HuaQuant.TradeDataCollector;
+using HuaQuant.TradeDataAccess;
 
-namespace TradeDatacenter
+namespace HuaQuant.TradeDatacenter
 {
-    public class QuotationJob:BaseDataJob,IJob
+    public class QuotationJob:BaseDataJob
     {
         public QuotationJob(string methodName, string className, IEnumerable<string> symbols,DateTime? dataDate) : base("QuotationJob", methodName, className, symbols,dataDate) { }
         
-        public bool Execute()
+        protected override bool doJob()
         {
             try
             {
@@ -25,7 +25,6 @@ namespace TradeDatacenter
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
                 return false;
             }
         }

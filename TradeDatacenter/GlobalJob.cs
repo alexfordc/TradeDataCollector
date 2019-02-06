@@ -3,33 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TradeDataCollector;
 using System.Reflection;
-using TradeDataAccess;
-
-namespace TradeDatacenter
+using HuaQuant.TradeDataCollector;
+using HuaQuant.TradeDataAccess;
+using HuaQuant.JobSchedule;
+namespace HuaQuant.TradeDatacenter
 {
-    public class GlobalJob : IJob
+    public class GlobalJob:Job
     {
         private GMCollector gmc = new GMCollector();
         private Config config;
-        private List<JobRunner> jRunners = new List<JobRunner>();
-        public List<JobRunner> JobRunners
-        {
-            get { return this.jRunners; }
-        }
-        public GlobalJob(Config config)
+        private JobSchedule.JobSchedule jobSche;
+
+        public GlobalJob(Config config,JobSchedule.JobSchedule jobSche):base("GlobalJob",null,true)
         {
             this.config = config;
+            this.jobSche = jobSche;
             Type type = this.GetType();
         }
-        public bool Execute()
+        protected override bool doJob()
         {
             DateTime curDay = DateTime.Today;
             Console.WriteLine("当前日期:{0}", curDay.ToLongDateString());
             DateTime tradeDay = gmc.GetNextTradingDate("SHSE", curDay.AddDays(-1));
-            if (curDay == tradeDay)
-            {
+            //if (curDay == tradeDay)
+            //{
                 List<Instrument> insts = new List<Instrument>();
                 insts.AddRange(gmc.GetInstruments("SHSE", "stock"));
                 insts.AddRange(gmc.GetInstruments("SZSE", "stock"));
@@ -49,40 +47,28 @@ namespace TradeDatacenter
                         Type type = Type.GetType(dataJobConfig.ClassName, (aName) => Assembly.LoadFrom(aName.Name),
             (assem, name, ignore) => assem == null ? Type.GetType(name, false, ignore) : assem.GetType(name, false, ignore));
                         IJob job = (IJob)Activator.CreateInstance(type, parameters);
-                        JobRunner jRunner;
+
+                        ((Job)job).ShowDetail = true;
                         DateTime? beginTime,endTime;
                         if (dataJobConfig.BeginTime != null) beginTime=DateTime.Parse(dataJobConfig.BeginTime);
                         else beginTime = null;
                         if (dataJobConfig.EndTime != null) endTime = DateTime.Parse(dataJobConfig.EndTime);
                         else endTime = null;
-                        TimeSpan? timeSpan;
-                        if (dataJobConfig.TimeSpan != null) timeSpan = TimeSpan.Parse(dataJobConfig.TimeSpan);
-                        else timeSpan = null;
-                        if (dataJobConfig.Times > 0) {
-                            jRunner=new JobRunner(dataJobConfig.CallInterval, dataJobConfig.Times, beginTime, timeSpan);
-                        }else
-                        {
-                            jRunner = new JobRunner(dataJobConfig.CallInterval, beginTime, endTime, timeSpan);
-                        }
-                        jRunner.AddJob(job);
-                        this.jRunners.Add(jRunner);
+                        TimeSpan? timeInterval;
+                        if (dataJobConfig.TimeInterval != null) timeInterval = TimeSpan.Parse(dataJobConfig.TimeInterval);
+                        else timeInterval = null;
+                        //Console.WriteLine(dataJobConfig.TimeInterval);
+                        Console.WriteLine(((TimeSpan)timeInterval).TotalSeconds);
+                        JobTrigger trigger = new JobTrigger(beginTime, endTime, dataJobConfig.Times, timeInterval);
+                        jobSche.Add(job, trigger);
                     }
                 }
-                foreach (JobRunner jRunner in this.jRunners) jRunner.Start();
-            }
-            else
-            {
-                Console.WriteLine("今天不是交易日。");
-            }
+            //}
+            //else
+            //{
+            //    Console.WriteLine("今天不是交易日。");
+            //}
             return true;
-        }
-        public void StopAllJobs()
-        {
-            foreach(JobRunner jRunner in this.jRunners)
-            {
-                jRunner.Stop();
-            }
-            this.jRunners.RemoveAll(e=> { return true; });
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TradeDataCollector
+namespace HuaQuant.TradeDataCollector
 {
     [Serializable]
     public class Instrument

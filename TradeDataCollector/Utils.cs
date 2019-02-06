@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 
-namespace TradeDataCollector
+namespace HuaQuant.TradeDataCollector
 {
     public static class Utils
     {       

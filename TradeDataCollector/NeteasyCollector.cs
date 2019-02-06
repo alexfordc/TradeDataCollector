@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace TradeDataCollector
+namespace HuaQuant.TradeDataCollector
 {
     public class NeteasyCollector:ICollector
     {

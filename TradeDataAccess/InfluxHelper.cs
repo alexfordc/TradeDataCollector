@@ -11,7 +11,7 @@ using InfluxData.Net.InfluxDb.Models;
 using InfluxData.Net.InfluxDb.Models.Responses;
 using InfluxData.Net.InfluxDb.ClientSubModules;
 
-namespace TradeDataAccess
+namespace HuaQuant.TradeDataAccess
 {
     public class InfluxHelper
     {

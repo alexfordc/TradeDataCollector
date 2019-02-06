@@ -1,4 +1,4 @@
-﻿namespace TradeDatacenter
+﻿namespace HuaQuant.TradeDatacenter
 {
     partial class MainForm
     {

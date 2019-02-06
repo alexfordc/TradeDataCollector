@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{277BF320-29B8-4B1F-83A6-A1504E6938EC}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>TradeDatacenter</RootNamespace>
-    <AssemblyName>TradeDatacenter</AssemblyName>
+    <RootNamespace>HuaQuant.TradeDatacenter</RootNamespace>
+    <AssemblyName>HuaQuant.TradeDatacenter</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -57,9 +57,7 @@
     <Compile Include="DisplayForm.Designer.cs">
       <DependentUpon>DisplayForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="JobRunner.cs" />
     <Compile Include="GlobalJob.cs" />
-    <Compile Include="IJob.cs" />
     <Compile Include="Main.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -85,6 +83,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="config.json" />
     <None Include="packages.config" />
@@ -102,6 +101,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JobSchedule\JobSchedule.csproj">
+      <Project>{efdefc2c-aea8-4d77-8998-3f46167e8e68}</Project>
+      <Name>JobSchedule</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TradeDataAccess\TradeDataAccess.csproj">
       <Project>{2cfa0638-1d81-49d4-b8b5-6ece4938e1aa}</Project>
       <Name>TradeDataAccess</Name>

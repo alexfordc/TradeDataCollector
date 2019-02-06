@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.IO;
 
-namespace TradeDataCollector
+namespace HuaQuant.TradeDataCollector
 {
     public class SinaCollector : ICollector
     {

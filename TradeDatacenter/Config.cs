@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using System.IO;
 
-namespace TradeDatacenter
+namespace HuaQuant.TradeDatacenter
 {
     public class Config
     {
@@ -25,11 +25,10 @@ namespace TradeDatacenter
     public class DataJobConfig
     {
         public string ClassName;
-        public int CallInterval;
+        public string TimeInterval=null;
         public string BeginTime=null;
         public string EndTime=null;
         public int Times=0;
-        public string TimeSpan=null;
         public List<DataCollector> DataCollectors; 
     }
     public class DataCollector

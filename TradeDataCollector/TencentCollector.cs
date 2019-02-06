@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace TradeDataCollector
+namespace HuaQuant.TradeDataCollector
 {
     public class TencentCollector : ICollector
     {

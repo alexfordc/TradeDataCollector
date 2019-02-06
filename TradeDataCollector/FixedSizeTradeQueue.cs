@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TradeDataCollector
+namespace HuaQuant.TradeDataCollector
 {
     public class FixedSizeTradeQueue:SortedList<DateTime,Trade>
     {

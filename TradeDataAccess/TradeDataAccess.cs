@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TradeDataCollector;
+using HuaQuant.TradeDataCollector;
 using InfluxData.Net.InfluxDb.Models;
 using InfluxData.Net.InfluxDb.Models.Responses;
-namespace TradeDataAccess
+namespace HuaQuant.TradeDataAccess
 {
     public static class TradeDataAccessor
     {
@@ -149,6 +149,12 @@ namespace TradeDataAccess
                 }
             }
             return ret;
+        }
+
+        public static void ClearRedis()
+        {
+            List<string> keys = RedisHelper.GetKeys("*");
+            foreach (string key in keys) RedisHelper.Remove(key);
         }
     }
 }

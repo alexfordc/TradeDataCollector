@@ -7,8 +7,8 @@
     <ProjectGuid>{08154505-DF38-438A-9CB3-8E07B3F4F684}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TradeDataCollector</RootNamespace>
-    <AssemblyName>TradeDataCollector</AssemblyName>
+    <RootNamespace>HuaQuant.TradeDataCollector</RootNamespace>
+    <AssemblyName>HuaQuant.TradeDataCollector</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

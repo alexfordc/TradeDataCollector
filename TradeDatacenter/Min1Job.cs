@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TradeDataCollector;
-using TradeDataAccess;
+using HuaQuant.TradeDataCollector;
+using HuaQuant.TradeDataAccess;
 
-namespace TradeDatacenter
+namespace HuaQuant.TradeDatacenter
 {
-    public class Min1Job:BaseDataJob,IJob
+    public class Min1Job:BaseDataJob
     {
         private string lastTime;
         
@@ -18,7 +18,7 @@ namespace TradeDatacenter
             this.lastTime = Utils.DateTimeToString((DateTime)this.dataDate);
         }
         
-        public bool Execute()
+        protected override bool doJob()
         {
             try
             {
@@ -35,7 +35,6 @@ namespace TradeDatacenter
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
                 return false;
             }
         }

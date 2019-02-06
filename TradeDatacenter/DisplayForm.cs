@@ -7,25 +7,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using TradeDataAccess;
-using TradeDataCollector;
+using HuaQuant.TradeDataAccess;
+using HuaQuant.TradeDataCollector;
 
-namespace TradeDatacenter
+namespace HuaQuant.TradeDatacenter
 {
     public partial class DisplayForm : Form
     {
+        private List<Instrument> instruments;
         public DisplayForm()
         {
             InitializeComponent();
         }
 
         private void BtnShowQuotation_Click(object sender, EventArgs e)
-        {
-            List<Instrument> instruments = TradeDataAccessor.GetInstruments();
+        {           
             Dictionary<string, Tick> currentTicks = TradeDataAccessor.GetCurrentTicks();
 
             QuotationDataTable qdt = new QuotationDataTable();
-            foreach(Instrument inst in instruments)
+            foreach(Instrument inst in this.instruments)
             {
                 DataRow dr = qdt.NewRow();
                 dr["Symbol"] = inst.Symbol;
@@ -64,7 +64,7 @@ namespace TradeDatacenter
 
         private void BtnShowMin1Bar_Click(object sender, EventArgs e)
         {
-            string symbol = this.TxtSymbol.Text;
+            string symbol = this.CmbSymbol.Text;
             if (symbol == "") MessageBox.Show("please input the symbol!");
             else
             {
@@ -87,6 +87,18 @@ namespace TradeDatacenter
                 }
                 this.dataGridView1.DataSource = bdt;
             }
+        }
+
+        private void DisplayForm_Load(object sender, EventArgs e)
+        {
+            instruments = TradeDataAccessor.GetInstruments();
+            List<string> symbols = instruments.Select(i => i.Symbol).OrderBy(i=>i).ToList();
+            this.CmbSymbol.DataSource = symbols;
+        }
+
+        private void BtnClearRedis_Click(object sender, EventArgs e)
+        {
+            TradeDataAccessor.ClearRedis();
         }
     }
     public class QuotationDataTable : DataTable

@@ -7,8 +7,8 @@
     <ProjectGuid>{2CFA0638-1D81-49D4-B8B5-6ECE4938E1AA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TradeDataAccess</RootNamespace>
-    <AssemblyName>TradeDataAccess</AssemblyName>
+    <RootNamespace>HuaQuant.TradeDataAccess</RootNamespace>
+    <AssemblyName>HuaQuant.TradeDataAccess</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

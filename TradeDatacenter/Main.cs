@@ -7,14 +7,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using HuaQuant.JobSchedule;
 
-namespace TradeDatacenter
+namespace HuaQuant.TradeDatacenter
 {
     public partial class MainForm : Form
     {
         private Config config;
         private GlobalJob gJob;
-        private JobRunner jRun;
+        private JobSchedule.JobSchedule jobSche;
         public MainForm()
         {
             InitializeComponent();
@@ -60,17 +61,17 @@ namespace TradeDatacenter
 
         private void BtnStart_Click(object sender, EventArgs e)
         {
-            gJob = new GlobalJob(config);
+            this.jobSche = new JobSchedule.JobSchedule();
+            gJob = new GlobalJob(config,this.jobSche);
             DateTime curDay = DateTime.Today;
-            jRun = new JobRunner(1000, 1, curDay.Add(new TimeSpan(9, 15, 0)), new TimeSpan(1, 0, 0, 0));
-            jRun.AddJob(gJob);
-            jRun.Start();
+            JobTrigger trigger = new JobTrigger(curDay.Add(new TimeSpan(9, 15, 0)),null, 1, new TimeSpan(1, 0, 0, 0));
+            this.jobSche.Add(gJob, trigger);
+            this.jobSche.Start();
         }
 
         private void btnStop_Click(object sender, EventArgs e)
         {
-            jRun.Stop();
-            gJob.StopAllJobs();
+            this.jobSche.Stop();
         }
 
         private void BtnDisplay_Click(object sender, EventArgs e)

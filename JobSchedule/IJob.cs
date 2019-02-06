@@ -4,10 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TradeDatacenter
+namespace HuaQuant.JobSchedule
 {
     public interface IJob
     {
-        bool Execute();
+        void Execute();
+        bool IsFinished { get; }
+        bool IsRunning { get; }
+        int Times { get; }
     }
 }

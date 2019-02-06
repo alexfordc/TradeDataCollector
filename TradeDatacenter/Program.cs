@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 
-namespace TradeDatacenter
+namespace HuaQuant.TradeDatacenter
 {
     static class Program
     {

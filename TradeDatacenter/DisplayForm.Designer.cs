@@ -1,4 +1,4 @@
-﻿namespace TradeDatacenter
+﻿namespace HuaQuant.TradeDatacenter
 {
     partial class DisplayForm
     {
@@ -32,8 +32,9 @@
             this.BtnShowQuotation = new System.Windows.Forms.Button();
             this.BtnShowMin1Bar = new System.Windows.Forms.Button();
             this.BtnShowDay1Bar = new System.Windows.Forms.Button();
-            this.TxtSymbol = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.CmbSymbol = new System.Windows.Forms.ComboBox();
+            this.BtnClearRedis = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -75,13 +76,6 @@
             this.BtnShowDay1Bar.Text = "查看日线";
             this.BtnShowDay1Bar.UseVisualStyleBackColor = true;
             // 
-            // TxtSymbol
-            // 
-            this.TxtSymbol.Location = new System.Drawing.Point(695, 232);
-            this.TxtSymbol.Name = "TxtSymbol";
-            this.TxtSymbol.Size = new System.Drawing.Size(125, 21);
-            this.TxtSymbol.TabIndex = 4;
-            // 
             // label1
             // 
             this.label1.AutoSize = true;
@@ -89,21 +83,41 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(125, 12);
             this.label1.TabIndex = 5;
-            this.label1.Text = "请输入要查询的证券：";
+            this.label1.Text = "请选择要查询的证券：";
+            // 
+            // CmbSymbol
+            // 
+            this.CmbSymbol.FormattingEnabled = true;
+            this.CmbSymbol.Location = new System.Drawing.Point(695, 240);
+            this.CmbSymbol.Name = "CmbSymbol";
+            this.CmbSymbol.Size = new System.Drawing.Size(121, 20);
+            this.CmbSymbol.TabIndex = 6;
+            // 
+            // BtnClearRedis
+            // 
+            this.BtnClearRedis.Location = new System.Drawing.Point(697, 317);
+            this.BtnClearRedis.Name = "BtnClearRedis";
+            this.BtnClearRedis.Size = new System.Drawing.Size(119, 23);
+            this.BtnClearRedis.TabIndex = 7;
+            this.BtnClearRedis.Text = "清空Redis数据";
+            this.BtnClearRedis.UseVisualStyleBackColor = true;
+            this.BtnClearRedis.Click += new System.EventHandler(this.BtnClearRedis_Click);
             // 
             // DisplayForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(828, 450);
+            this.Controls.Add(this.BtnClearRedis);
+            this.Controls.Add(this.CmbSymbol);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.TxtSymbol);
             this.Controls.Add(this.BtnShowDay1Bar);
             this.Controls.Add(this.BtnShowMin1Bar);
             this.Controls.Add(this.BtnShowQuotation);
             this.Controls.Add(this.dataGridView1);
             this.Name = "DisplayForm";
             this.Text = "数据查看";
+            this.Load += new System.EventHandler(this.DisplayForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -116,7 +130,8 @@
         private System.Windows.Forms.Button BtnShowQuotation;
         private System.Windows.Forms.Button BtnShowMin1Bar;
         private System.Windows.Forms.Button BtnShowDay1Bar;
-        private System.Windows.Forms.TextBox TxtSymbol;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ComboBox CmbSymbol;
+        private System.Windows.Forms.Button BtnClearRedis;
     }
 }
