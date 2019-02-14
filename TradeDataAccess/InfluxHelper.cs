@@ -31,7 +31,7 @@ namespace HuaQuant.TradeDataAccess
                     {
                         if (_instance == null)
                         {
-                            _instance = new InfluxDbClient(influxUrl, username, password, InfluxDbVersion.Latest);
+                            _instance = new InfluxDbClient(influxUrl, username, password, InfluxDbVersion.v_1_3);
                         }
                     }
                 }
@@ -49,9 +49,13 @@ namespace HuaQuant.TradeDataAccess
         }
         public static async Task WriteAsync(Point pointToWrite,string dbName)
         {
-            await Instance.Client.WriteAsync(pointToWrite,dbName);
+            await Instance.Client.WriteAsync(pointToWrite,dbName,null,"s");
         }
-        public static IEnumerable<Serie> QueryAsync(string query,string dbName,object parameters=null)
+        public static async Task WriteAsync(IEnumerable<Point> points,string dbName)
+        {
+            await Instance.Client.WriteAsync(points, dbName, null, "s");
+        }
+        public static IEnumerable<Serie> Query(string query,string dbName,object parameters=null)
         {
             IEnumerable<Serie> response;
             if (parameters != null)
@@ -68,14 +72,14 @@ namespace HuaQuant.TradeDataAccess
         {
             await Instance.Database.CreateDatabaseAsync(dbName);
         }
-        public static async Task<IEnumerable<Database>> GetDatabaseAsync()
+        public static IEnumerable<Database> GetDatabase()
         {
-            IEnumerable<Database> response = await Instance.Database.GetDatabasesAsync();
+            IEnumerable<Database> response = Instance.Database.GetDatabasesAsync().Result;
             return response;
         }
         public static IBatchWriter CreateBatchWriter(string dbName)
         {
-            IBatchWriter batchWriter = Instance.Serie.CreateBatchWriter("yourDbName");
+            IBatchWriter batchWriter = Instance.Serie.CreateBatchWriter(dbName,null,"s");
             return batchWriter;
         }
     }

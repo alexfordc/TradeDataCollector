@@ -26,8 +26,8 @@ namespace HuaQuant.TradeDatacenter
             DateTime curDay = DateTime.Today;
             Console.WriteLine("当前日期:{0}", curDay.ToLongDateString());
             DateTime tradeDay = gmc.GetNextTradingDate("SHSE", curDay.AddDays(-1));
-            //if (curDay == tradeDay)
-            //{
+            if (curDay == tradeDay)
+            {
                 List<Instrument> insts = new List<Instrument>();
                 insts.AddRange(gmc.GetInstruments("SHSE", "stock"));
                 insts.AddRange(gmc.GetInstruments("SZSE", "stock"));
@@ -42,13 +42,13 @@ namespace HuaQuant.TradeDatacenter
                     {
                         weightTotal += dataCollector.Weight;
                         int count =(int)Math.Round(symbols.Count * weightTotal)-i;
-                        object[] parameters = new object[] { dataCollector.MothedName, dataCollector.ClassName, symbols.GetRange(i, count) , curDay };    
+                        object[] parameters = new object[] { dataCollector.MothedName, dataCollector.ClassName, symbols.GetRange(i, count) , curDay};    
                         i = i + count;
                         Type type = Type.GetType(dataJobConfig.ClassName, (aName) => Assembly.LoadFrom(aName.Name),
             (assem, name, ignore) => assem == null ? Type.GetType(name, false, ignore) : assem.GetType(name, false, ignore));
                         IJob job = (IJob)Activator.CreateInstance(type, parameters);
 
-                        ((Job)job).ShowDetail = true;
+                        //((Job)job).ShowDetail = true;
                         DateTime? beginTime,endTime;
                         if (dataJobConfig.BeginTime != null) beginTime=DateTime.Parse(dataJobConfig.BeginTime);
                         else beginTime = null;
@@ -57,17 +57,15 @@ namespace HuaQuant.TradeDatacenter
                         TimeSpan? timeInterval;
                         if (dataJobConfig.TimeInterval != null) timeInterval = TimeSpan.Parse(dataJobConfig.TimeInterval);
                         else timeInterval = null;
-                        //Console.WriteLine(dataJobConfig.TimeInterval);
-                        Console.WriteLine(((TimeSpan)timeInterval).TotalSeconds);
                         JobTrigger trigger = new JobTrigger(beginTime, endTime, dataJobConfig.Times, timeInterval);
                         jobSche.Add(job, trigger);
                     }
                 }
-            //}
-            //else
-            //{
-            //    Console.WriteLine("今天不是交易日。");
-            //}
+            }
+            else
+            {
+                Console.WriteLine("今天不是交易日。");
+            }
             return true;
         }
     }

@@ -6,10 +6,13 @@ using System.Threading.Tasks;
 using HuaQuant.TradeDataCollector;
 using InfluxData.Net.InfluxDb.Models;
 using InfluxData.Net.InfluxDb.Models.Responses;
+using InfluxData.Net.InfluxDb.ClientSubModules;
 namespace HuaQuant.TradeDataAccess
 {
     public static class TradeDataAccessor
     {
+        private static IBatchWriter batchWriter = null;
+        private static object _locker = new Object();
         public static void SetRedisConnectString(string connStr)
         {
             RedisHelper.SetConnectString(connStr);
@@ -18,7 +21,7 @@ namespace HuaQuant.TradeDataAccess
         {
             InfluxHelper.SetConnectParameters(influxUrl, username, password);
         }
-        public static async void StoreInstruments(List<Instrument> instruments)
+        public static async Task StoreInstruments(List<Instrument> instruments)
         {
             foreach(Instrument inst in instruments)
             {
@@ -26,14 +29,15 @@ namespace HuaQuant.TradeDataAccess
                 await RedisHelper.SetAsync(key, inst);
             }
         }
-        public static async void StoreCurrentTicks(Dictionary<string,Tick> dictTicks) {
+        public static async Task StoreCurrentTicks(Dictionary<string,Tick> dictTicks) {
             foreach(KeyValuePair<string,Tick> kvp in dictTicks)
             {
                 await RedisHelper.SetAsync(kvp.Key, kvp.Value);
             }
         }
-        public static async void StoreTrades(string symbol,List<Trade> trades) {
-            foreach(Trade aTrade in trades)
+        public static async Task StoreTrades(string symbol,List<Trade> trades) {
+            List<Point> points = new List<Point>();
+            foreach (Trade aTrade in trades)
             {
                 Point aPoint = new Point
                 {
@@ -50,11 +54,14 @@ namespace HuaQuant.TradeDataAccess
                     },
                     Timestamp=aTrade.DateTime
                 };
-                await InfluxHelper.WriteAsync(aPoint, "Finance");
+                points.Add(aPoint);
             }
+            await InfluxHelper.WriteAsync(points, "Finance");
         }
-        public static async void StoreMin1Bars(string symbol,List<Bar> bars) {
-            foreach(Bar aBar in bars)
+        public static async Task StoreMin1Bars(string symbol, List<Bar> bars)
+        {
+            List<Point> points = new List<Point>();
+            foreach (Bar aBar in bars)
             {
                 Point aPoint = new Point
                 {
@@ -75,10 +82,14 @@ namespace HuaQuant.TradeDataAccess
                     },
                     Timestamp = aBar.BeginTime
                 };
-                await InfluxHelper.WriteAsync(aPoint, "Finance");
+                points.Add(aPoint);
             }
+            await InfluxHelper.WriteAsync(points, "Finance");
         }
-        public static async void StoreDay1Bars(string symbol, List<Bar> bars) {
+
+        public static async Task StoreDay1Bars(string symbol, List<Bar> bars)
+        {
+            List<Point> points = new List<Point>();
             foreach (Bar aBar in bars)
             {
                 Point aPoint = new Point
@@ -100,8 +111,9 @@ namespace HuaQuant.TradeDataAccess
                     },
                     Timestamp = aBar.BeginTime
                 };
-                await InfluxHelper.WriteAsync(aPoint, "Finance");
+                points.Add(aPoint);
             }
+            await InfluxHelper.WriteAsync(points, "Finance");
         }
 
         public static List<Instrument> GetInstruments()
@@ -127,7 +139,7 @@ namespace HuaQuant.TradeDataAccess
         public static List<Bar> GetMin1Bars(string symbol)
         {
             string query =string.Format("select * from \"Bar.60\" where \"Symbol\"=\'{0}\'",symbol);
-            IEnumerable<Serie> series=InfluxHelper.QueryAsync(query, "Finance");
+            IEnumerable<Serie> series=InfluxHelper.Query(query, "Finance");
             List<Bar> ret = new List<Bar>();
             foreach(Serie serie in series)
             {
@@ -150,11 +162,102 @@ namespace HuaQuant.TradeDataAccess
             }
             return ret;
         }
-
+        public static List<Bar> GetDay1Bars(string symbol)
+        {
+            string query = string.Format("select * from \"Bar.Daily\" where \"Symbol\"=\'{0}\'", symbol);
+            IEnumerable<Serie> series = InfluxHelper.Query(query, "Finance");
+            List<Bar> ret = new List<Bar>();
+            foreach (Serie serie in series)
+            {
+                foreach (var value in serie.Values)
+                {
+                    Bar aBar = new Bar
+                    {
+                        BeginTime = Convert.ToDateTime(value[0]),
+                        Amount = Utils.ParseDouble(value[1].ToString()),
+                        Close = Utils.ParseFloat(value[2].ToString()),
+                        High = Utils.ParseFloat(value[3].ToString()),
+                        LastClose = Utils.ParseFloat(value[4].ToString()),
+                        Low = Utils.ParseFloat(value[5].ToString()),
+                        Open = Utils.ParseFloat(value[6].ToString()),
+                        Volume = Utils.ParseDouble(value[8].ToString()),
+                        Size = 86400
+                    };
+                    ret.Add(aBar);
+                }
+            }
+            return ret;
+        }
         public static void ClearRedis()
         {
             List<string> keys = RedisHelper.GetKeys("*");
             foreach (string key in keys) RedisHelper.Remove(key);
+        }
+
+        public static void StartBatchWriter()
+        {
+            if (batchWriter == null)
+            {
+                lock (_locker)
+                {
+                    if (batchWriter == null)
+                    {
+                        batchWriter = InfluxHelper.CreateBatchWriter("Finance");
+                        batchWriter.OnError += BatchWriter_OnError;
+                        batchWriter.Start(1000, true,10000);
+                    }
+                }
+            }
+        }
+
+        public static void StopBatchWriter()
+        {
+            if (batchWriter != null)
+            {
+                lock (_locker)
+                {
+                    if (batchWriter != null)
+                    {
+                        batchWriter.Stop();
+                        batchWriter = null;
+                    }
+                }
+            }
+        }
+
+        public static void BatchStoreMin1Bars(string symbol, List<Bar> bars)
+        {
+            List<Point> points = new List<Point>();
+            foreach (Bar aBar in bars)
+            {
+                Point aPoint = new Point
+                {
+                    Name = "Bar.60",
+                    Fields = new Dictionary<string, object>
+                    {
+                        {"LastClose",aBar.LastClose},
+                        {"Open",aBar.Open },
+                        {"High",aBar.High },
+                        {"Low",aBar.Low },
+                        {"Close",aBar.Close },
+                        {"Volume",aBar.Volume },
+                        {"Amount",aBar.Amount }
+                    },
+                    Tags = new Dictionary<string, object>
+                    {
+                        {"Symbol",symbol }
+                    },
+                    Timestamp = aBar.BeginTime
+                };
+                points.Add(aPoint);
+            }
+            batchWriter.AddPoints(points);
+        }
+        // OnError handler method
+        private static void BatchWriter_OnError(object sender, Exception e)
+        {
+            // Handle the error here
+            Console.WriteLine("在{0}中:{1}",sender.ToString(),e.InnerException.Message);
         }
     }
 }

@@ -8,7 +8,7 @@ namespace HuaQuant.JobSchedule
         private DateTime? endTime = null;
         private TimeSpan? timeInterval = null;
         private int timesLimit = 0;
-        private DateTime? lastTriggerTime = null;
+        private DateTime? nextTriggerTime = null;
 
         private bool expired = false;
         public bool Expired
@@ -16,6 +16,12 @@ namespace HuaQuant.JobSchedule
             get { return this.expired; }
         }
 
+        private bool intervalBaseOnBeginTime = false;
+        public bool IntervalBaseOnBeginTime
+        {
+            get { return this.intervalBaseOnBeginTime; }
+            set { this.intervalBaseOnBeginTime = value; }
+        }
         public JobTrigger(DateTime? beginTime = null, DateTime? endTime = null,int timesLimit=0, TimeSpan? timeInterval = null)
         {
             this.beginTime = beginTime;
@@ -31,13 +37,18 @@ namespace HuaQuant.JobSchedule
                 this.expired = true;
                 return false;
             }
-            
-            if ((lastTriggerTime == null) || (timeInterval == null) || ((DateTime)lastTriggerTime).Add((TimeSpan)timeInterval) <= time)
+            if (timeInterval == null) return true;
+            if (nextTriggerTime == null)
             {
-                lastTriggerTime = time;
+                if (intervalBaseOnBeginTime) nextTriggerTime = ((DateTime)beginTime).Add((TimeSpan)timeInterval);
+                else nextTriggerTime = ((DateTime)time).Add((TimeSpan)timeInterval);
                 return true;
             }
-            else return false;
+            if (time >= nextTriggerTime)
+            {
+                nextTriggerTime = ((DateTime)time).Add((TimeSpan)timeInterval);
+                return true;
+            }else return false;
         }
     }
 }

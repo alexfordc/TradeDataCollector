@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using HuaQuant.TradeDataAccess;
 using HuaQuant.TradeDataCollector;
+using System.Threading;
 
 namespace HuaQuant.TradeDatacenter
 {
@@ -94,11 +95,149 @@ namespace HuaQuant.TradeDatacenter
             instruments = TradeDataAccessor.GetInstruments();
             List<string> symbols = instruments.Select(i => i.Symbol).OrderBy(i=>i).ToList();
             this.CmbSymbol.DataSource = symbols;
+            this.DtpBeginTime.Value = DateTime.Today.AddDays(-7);
+            this.DtpEndTime.Value = DateTime.Today;
         }
 
         private void BtnClearRedis_Click(object sender, EventArgs e)
         {
             TradeDataAccessor.ClearRedis();
+        }
+        private void RefreshLabel(Label lbl, string text)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new RefreshLabelDelegate(this.RefreshLabel), lbl, text);
+            }
+            else
+            {
+                lbl.Text = text;
+            }
+        }
+        private void RefreshProgressBar(ProgressBar pgb, int value)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new RefreshProgressBarDelegate(this.RefreshProgressBar), pgb, value);
+            }else
+            {
+                pgb.Value = value;
+            }
+        }
+        private void RefreshPlateData(DataGridView dgv, DataTable dt)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new RefreshDataDelegate(this.RefreshPlateData), dgv, dt);
+            }
+            else
+            {
+                dgv.DataSource = dt;
+            }
+        }
+        private delegate void RefreshProgressBarDelegate(ProgressBar pgb, int value);
+        private delegate void RefreshDataDelegate(DataGridView dgv, DataTable dt);
+        private delegate void RefreshLabelDelegate(Label lbl, string text);
+        private Thread curThread = null;
+        private void BtnDownloadMin1Bar_Click(object sender, EventArgs e)
+        {
+            this.PgbDisplay.Maximum = this.CmbSymbol.Items.Count;
+            this.PgbDisplay.Value = 0;
+            curThread = new Thread(new ThreadStart(DownLoadMin1Bar));
+            curThread.Start();
+        }
+        private void DownLoadMin1Bar()
+        {
+            string text= "当前进度：开始下载1分线.....";
+            RefreshLabel(this.lblDisplay, text);
+            GMCollector gmc = new GMCollector();
+            string beginTimeString = Utils.DateTimeToString(this.DtpBeginTime.Value);
+            string endTimeString = Utils.DateTimeToString(this.DtpEndTime.Value);
+            int i = 0;
+            foreach (var item in this.CmbSymbol.Items)
+            {
+                string symbol = item.ToString();
+                text = string.Format("当前进度：下载<{0}>的1分线",symbol);
+                RefreshLabel(this.lblDisplay, text);
+                List<Bar> bars = gmc.HistoryBars(symbol, 60,beginTimeString,endTimeString);
+                if (bars.Count > 0)
+                {
+                    TradeDataAccessor.StoreMin1Bars(symbol, bars);
+                }
+                i++;
+                RefreshProgressBar(this.PgbDisplay, i);
+            }
+            text = "当前进度：1分线下载完毕。";
+            RefreshLabel(this.lblDisplay, text);
+        }
+
+        private void BtnStopDownload_Click(object sender, EventArgs e)
+        {
+            if (curThread != null &&
+                curThread.ThreadState != ThreadState.Stopped &&
+                curThread.ThreadState != ThreadState.Aborted)
+            {
+                curThread.Abort();
+            }
+        }
+
+        private void BtnDownloadDailyBar_Click(object sender, EventArgs e)
+        {
+            this.PgbDisplay.Maximum = this.CmbSymbol.Items.Count;
+            this.PgbDisplay.Value = 0;
+            curThread = new Thread(new ThreadStart(DownloadDailyBar));
+            curThread.Start();
+        }
+        private void DownloadDailyBar()
+        {
+            string text = "当前进度：开始下载日线.....";
+            RefreshLabel(this.lblDisplay, text);
+            GMCollector gmc = new GMCollector();
+            string beginTimeString = Utils.DateTimeToString(this.DtpBeginTime.Value);
+            string endTimeString = Utils.DateTimeToString(this.DtpEndTime.Value);
+            int i = 0;
+            foreach (var item in this.CmbSymbol.Items)
+            {
+                string symbol = item.ToString();
+                text = string.Format("当前进度：下载<{0}>的日线", symbol);
+                RefreshLabel(this.lblDisplay, text);
+                List<Bar> bars = gmc.HistoryBars(symbol, 86400, beginTimeString, endTimeString);
+                if (bars.Count > 0)
+                {
+                    TradeDataAccessor.StoreDay1Bars(symbol, bars);
+                }
+                i++;
+                RefreshProgressBar(this.PgbDisplay, i);
+            }
+            text = "当前进度：日线下载完毕。";
+            RefreshLabel(this.lblDisplay, text);
+        }
+
+        private void BtnShowDay1Bar_Click(object sender, EventArgs e)
+        {
+            string symbol = this.CmbSymbol.Text;
+            if (symbol == "") MessageBox.Show("please input the symbol!");
+            else
+            {
+                List<Bar> bars = TradeDataAccessor.GetDay1Bars(symbol);
+                BarDataTable bdt = new BarDataTable();
+                foreach (Bar bar in bars)
+                {
+                    DataRow dr = bdt.NewRow();
+                    dr["BeginTime"] = bar.BeginTime;
+                    dr["EndTime"] = bar.EndTime;
+                    dr["LastClose"] = bar.LastClose;
+                    dr["Open"] = bar.Open;
+                    dr["High"] = bar.High;
+                    dr["Low"] = bar.Low;
+                    dr["Close"] = bar.Close;
+                    dr["Volume"] = bar.Volume;
+                    dr["Amount"] = bar.Amount;
+                    dr["Size"] = bar.Size;
+                    bdt.Rows.Add(dr);
+                }
+                this.dataGridView1.DataSource = bdt;
+            }
         }
     }
     public class QuotationDataTable : DataTable

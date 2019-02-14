@@ -64,7 +64,8 @@ namespace HuaQuant.TradeDatacenter
             this.jobSche = new JobSchedule.JobSchedule();
             gJob = new GlobalJob(config,this.jobSche);
             DateTime curDay = DateTime.Today;
-            JobTrigger trigger = new JobTrigger(curDay.Add(new TimeSpan(9, 15, 0)),null, 1, new TimeSpan(1, 0, 0, 0));
+            JobTrigger trigger = new JobTrigger(curDay.Add(new TimeSpan(9, 15, 0)),null, 0, new TimeSpan(1, 0, 0, 0));
+            trigger.IntervalBaseOnBeginTime = true;
             this.jobSche.Add(gJob, trigger);
             this.jobSche.Start();
         }

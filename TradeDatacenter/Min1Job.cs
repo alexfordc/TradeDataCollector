@@ -10,33 +10,39 @@ namespace HuaQuant.TradeDatacenter
 {
     public class Min1Job:BaseDataJob
     {
-        private string lastTime;
-        
+        private Dictionary<string, string> lastTimes = new Dictionary<string, string>();
+
         public Min1Job(string methodName, string className, IEnumerable<string> symbols,DateTime? dataDate) : base("Min1Job",methodName, className, symbols,dataDate) {
 
             if (this.dataDate == null) this.dataDate = DateTime.Today;
-            this.lastTime = Utils.DateTimeToString((DateTime)this.dataDate);
+            string lastTime = Utils.DateTimeToString((DateTime)this.dataDate);
+            Console.WriteLine(lastTime);
+            foreach(string symbol in symbols)
+            {
+                this.lastTimes.Add(symbol, lastTime);
+            }
         }
         
         protected override bool doJob()
         {
-            try
+            TradeDataAccessor.StartBatchWriter();
+            string endTime = Utils.DateTimeToString(DateTime.Now);
+            foreach (string symbol in this.symbols)
             {
-                string beginTime = this.lastTime;
-                string endTime = Utils.DateTimeToString(DateTime.Now);
-                foreach (string symbol in this.symbols)
+                string beginTime = this.lastTimes[symbol];
+                object[] parameters = new object[] { symbol, 60, beginTime, endTime };
+                List<Bar> data = (List<Bar>)this.invokeMethod(parameters);
+                
+                if (data.Count > 0)
                 {
-                    object[] parameters = new object[] { symbol, 60, beginTime, endTime };
-                    List<Bar> data = (List<Bar>)this.invokeMethod(parameters);
-                    TradeDataAccessor.StoreMin1Bars(symbol, data);
+                    this.lastTimes[symbol] = Utils.DateTimeToString(data.Last().BeginTime);
+                    //TradeDataAccessor.StoreMin1Bars(symbol, data);
+                    TradeDataAccessor.BatchStoreMin1Bars(symbol, data);
+                    //Console.WriteLine("{0} get data {1}", this.Name, data.Count);
                 }
-                this.lastTime = endTime;
-                return true;
             }
-            catch (Exception ex)
-            {
-                return false;
-            }
+            Console.WriteLine("{0} run {1} times", this.Name,this.Times);
+            return true;
         }
     }
 }
