@@ -39,21 +39,19 @@ namespace HuaQuant.TradeDataAccess
             }
         }
 
-        static InfluxHelper() { }
-
         public static void SetConnectParameters(string influxUrl,string username,string password)
         {
             InfluxHelper.influxUrl = influxUrl;
             InfluxHelper.username = username;
             InfluxHelper.password = password;
         }
-        public static async Task WriteAsync(Point pointToWrite,string dbName)
+        public static async Task WriteAsync(Point pointToWrite,string dbName, string policyName=null)
         {
-            await Instance.Client.WriteAsync(pointToWrite,dbName,null,"s");
+            await Instance.Client.WriteAsync(pointToWrite,dbName,policyName,"s");
         }
-        public static async Task WriteAsync(IEnumerable<Point> points,string dbName)
+        public static async Task WriteAsync(IEnumerable<Point> points,string dbName, string policyName=null)
         {
-            await Instance.Client.WriteAsync(points, dbName, null, "s");
+            await Instance.Client.WriteAsync(points, dbName, policyName, "s");
         }
         public static IEnumerable<Serie> Query(string query,string dbName,object parameters=null)
         {
@@ -68,18 +66,24 @@ namespace HuaQuant.TradeDataAccess
             }
             return response;
         }
-        public static async Task CreateDatabaseAsync(string dbName)
+        public static bool CreateDatabase(string dbName)
         {
-            await Instance.Database.CreateDatabaseAsync(dbName);
+            var response=Instance.Database.CreateDatabaseAsync(dbName).Result;
+            return response.Success;
         }
         public static IEnumerable<Database> GetDatabase()
         {
             IEnumerable<Database> response = Instance.Database.GetDatabasesAsync().Result;
             return response;
         }
-        public static IBatchWriter CreateBatchWriter(string dbName)
+        public static bool CreateRetentionPolicy(string dbName, string policyName, string duration, int replicationCopies)
         {
-            IBatchWriter batchWriter = Instance.Serie.CreateBatchWriter(dbName,null,"s");
+            var response=Instance.Retention.CreateRetentionPolicyAsync(dbName, policyName, duration, replicationCopies).Result;
+            return response.Success;
+        }
+        public static IBatchWriter CreateBatchWriter(string dbName,string policyName=null)
+        {
+            IBatchWriter batchWriter = Instance.Serie.CreateBatchWriter(dbName,policyName,"s");
             return batchWriter;
         }
     }

@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="BaseDataJob.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="DailyJob.cs" />
     <Compile Include="DisplayForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -68,6 +69,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QuotationJob.cs" />
+    <Compile Include="RepairMin1Job.cs" />
     <Compile Include="TextBoxWriter.cs" />
     <EmbeddedResource Include="DisplayForm.resx">
       <DependentUpon>DisplayForm.cs</DependentUpon>

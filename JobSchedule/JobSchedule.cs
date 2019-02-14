@@ -44,14 +44,14 @@ namespace HuaQuant.JobSchedule
             {
                 List<IJob> expiredJobs = new List<IJob>();
                 lock (triggers)
-                {
+                {                    
                     foreach (KeyValuePair<IJob, JobTrigger> kvp in triggers)
                     {
                         if (kvp.Value.Expired) expiredJobs.Add(kvp.Key);
                         else schedule(e.SignalTime, kvp.Value, kvp.Key);
                     }
+                    foreach (IJob job in expiredJobs) triggers.Remove(job);
                 }
-                foreach (IJob job in expiredJobs) triggers.Remove(job);
                 Interlocked.Exchange(ref inTimer, 0);
             }
         }

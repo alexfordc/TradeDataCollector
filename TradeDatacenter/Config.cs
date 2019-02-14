@@ -29,7 +29,8 @@ namespace HuaQuant.TradeDatacenter
         public string BeginTime=null;
         public string EndTime=null;
         public int Times=0;
-        public List<DataCollector> DataCollectors; 
+        public List<DataCollector> DataCollectors;
+        public List<DataJobConfig> SubJobs=null;
     }
     public class DataCollector
     {

@@ -1,44 +1,64 @@
 {
   "DataJobConfigs": [
     {
-      "ClassName": "TradeDatacenter.QuotationJob",
-      "CallInterval": 1000,
+      "ClassName": "HuaQuant.TradeDatacenter.QuotationJob",
+      "TimeInterval": "00:00:01",
       "BeginTime": "9:20:00",
       "EndTime": "15:03:00",
       "DataCollectors": [
-       {
-          "ClassName": "TradeDataCollector.SinaCollector,TradeDataCollector.dll",
+        {
+          "ClassName": "HuaQuant.TradeDataCollector.SinaCollector,HuaQuant.TradeDataCollector.dll",
           "MothedName": "Current",
-          "Weight": 0.40
+          "Weight": 0.5
         },
         {
-          "ClassName": "TradeDataCollector.TencentCollector,TradeDataCollector.dll",
+          "ClassName": "HuaQuant.TradeDataCollector.TencentCollector,HuaQuant.TradeDataCollector.dll",
           "MothedName": "Current",
-          "Weight": 0.30
+          "Weight": 0.3
         },
         {
-          "ClassName": "TradeDataCollector.NeteasyCollector,TradeDataCollector.dll",
+          "ClassName": "HuaQuant.TradeDataCollector.NeteasyCollector,HuaQuant.TradeDataCollector.dll",
           "MothedName": "Current",
-          "Weight": 0.20
-        },
-        {
-          "ClassName": "TradeDataCollector.EastMoneyCollector,TradeDataCollector.dll",
-          "MothedName": "Current",
-          "Weight": 0.10
+          "Weight": 0.2
         }
       ]
     },
     {
-      "ClassName": "TradeDatacenter.Min1Job",
-      "AssemblyName":"",
-      "CallInterval": 60000,
+      "ClassName": "HuaQuant.TradeDatacenter.Min1Job",
+      "TimeInterval": "00:01:00",
       "BeginTime": "9:25:00",
       "EndTime": "15:03:00",
       "DataCollectors": [
         {
-          "ClassName": "TradeDataCollector.GMCollector,TradeDataCollector.dll",
+          "ClassName": "HuaQuant.TradeDataCollector.GMCollector,HuaQuant.TradeDataCollector.dll",
           "MothedName": "HistoryBars",
           "Weight": 1.0
+        }
+      ]
+    },
+    {
+      "BeginTime": "20:00:00",
+      "Times": 1,
+      "SubJobs": [
+        {
+          "ClassName": "HuaQuant.TradeDatacenter.RepairMin1Job",
+          "DataCollectors": [
+            {
+              "ClassName": "HuaQuant.TradeDataCollector.GMCollector,HuaQuant.TradeDataCollector.dll",
+              "MothedName": "HistoryBars",
+              "Weight": 1.0
+            }
+          ]
+        },
+        {
+          "ClassName": "HuaQuant.TradeDatacenter.DailyJob",
+          "DataCollectors": [
+            {
+              "ClassName": "HuaQuant.TradeDataCollector.GMCollector,HuaQuant.TradeDataCollector.dll",
+              "MothedName": "HistoryBars",
+              "Weight": 1.0
+            }
+          ]
         }
       ]
     }

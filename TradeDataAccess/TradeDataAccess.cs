@@ -11,8 +11,12 @@ namespace HuaQuant.TradeDataAccess
 {
     public static class TradeDataAccessor
     {
-        private static IBatchWriter batchWriter = null;
+        private static Dictionary<string, IBatchWriter> batchWriters = new Dictionary<string, IBatchWriter>();
         private static object _locker = new Object();
+        static TradeDataAccessor()
+        {
+            DatabaseInit();
+        }
         public static void SetRedisConnectString(string connStr)
         {
             RedisHelper.SetConnectString(connStr);
@@ -56,7 +60,7 @@ namespace HuaQuant.TradeDataAccess
                 };
                 points.Add(aPoint);
             }
-            await InfluxHelper.WriteAsync(points, "Finance");
+            await InfluxHelper.WriteAsync(points, dbName);
         }
         public static async Task StoreMin1Bars(string symbol, List<Bar> bars)
         {
@@ -84,7 +88,7 @@ namespace HuaQuant.TradeDataAccess
                 };
                 points.Add(aPoint);
             }
-            await InfluxHelper.WriteAsync(points, "Finance");
+            await InfluxHelper.WriteAsync(points, dbName,min1BarPolicyName);
         }
 
         public static async Task StoreDay1Bars(string symbol, List<Bar> bars)
@@ -113,7 +117,7 @@ namespace HuaQuant.TradeDataAccess
                 };
                 points.Add(aPoint);
             }
-            await InfluxHelper.WriteAsync(points, "Finance");
+            await InfluxHelper.WriteAsync(points, dbName);
         }
 
         public static List<Instrument> GetInstruments()
@@ -138,8 +142,8 @@ namespace HuaQuant.TradeDataAccess
         }
         public static List<Bar> GetMin1Bars(string symbol)
         {
-            string query =string.Format("select * from \"Bar.60\" where \"Symbol\"=\'{0}\'",symbol);
-            IEnumerable<Serie> series=InfluxHelper.Query(query, "Finance");
+            string query =string.Format("select * from \"{0}\".\"Bar.60\" where \"Symbol\"=\'{1}\'",min1BarPolicyName,symbol);
+            IEnumerable<Serie> series=InfluxHelper.Query(query, dbName);
             List<Bar> ret = new List<Bar>();
             foreach(Serie serie in series)
             {
@@ -165,7 +169,7 @@ namespace HuaQuant.TradeDataAccess
         public static List<Bar> GetDay1Bars(string symbol)
         {
             string query = string.Format("select * from \"Bar.Daily\" where \"Symbol\"=\'{0}\'", symbol);
-            IEnumerable<Serie> series = InfluxHelper.Query(query, "Finance");
+            IEnumerable<Serie> series = InfluxHelper.Query(query, dbName);
             List<Bar> ret = new List<Bar>();
             foreach (Serie serie in series)
             {
@@ -194,34 +198,34 @@ namespace HuaQuant.TradeDataAccess
             foreach (string key in keys) RedisHelper.Remove(key);
         }
 
-        public static void StartBatchWriter()
+        private static IBatchWriter StartBatchWriter(string policyName)
         {
-            if (batchWriter == null)
+            IBatchWriter batchWriter = null;
+            lock (_locker)
             {
-                lock (_locker)
+                if (!batchWriters.ContainsKey(policyName))
                 {
-                    if (batchWriter == null)
-                    {
-                        batchWriter = InfluxHelper.CreateBatchWriter("Finance");
-                        batchWriter.OnError += BatchWriter_OnError;
-                        batchWriter.Start(1000, true,10000);
-                    }
+                    batchWriter = InfluxHelper.CreateBatchWriter(dbName, policyName);
+                    batchWriter.OnError += BatchWriter_OnError;
+                    batchWriter.Start(1000, true);
+                    batchWriters.Add(policyName, batchWriter);
+                }else
+                {
+                    batchWriter = batchWriters[policyName];
                 }
             }
+            return batchWriter;
         }
 
-        public static void StopBatchWriter()
+        public static void StopBatchWriters()
         {
-            if (batchWriter != null)
+            foreach(KeyValuePair<string,IBatchWriter> kvp in batchWriters)
             {
-                lock (_locker)
-                {
-                    if (batchWriter != null)
-                    {
-                        batchWriter.Stop();
-                        batchWriter = null;
-                    }
-                }
+                kvp.Value.Stop();
+            }
+            lock (batchWriters)
+            {
+                batchWriters.Clear();
             }
         }
 
@@ -251,13 +255,45 @@ namespace HuaQuant.TradeDataAccess
                 };
                 points.Add(aPoint);
             }
-            batchWriter.AddPoints(points);
+            IBatchWriter batchWirter = null;
+            if (!batchWriters.TryGetValue(min1BarPolicyName,out batchWirter))
+            {
+                batchWirter =StartBatchWriter(min1BarPolicyName);
+            }
+            batchWirter.AddPoints(points);
         }
         // OnError handler method
         private static void BatchWriter_OnError(object sender, Exception e)
         {
             // Handle the error here
             Console.WriteLine("在{0}中:{1}",sender.ToString(),e.InnerException.Message);
+        }
+
+        private static string dbName = "Stock";
+        private static string min1BarPolicyName = "OneYear";
+        private static string tradePolicyName = "OneMonth";
+        private static void DatabaseInit()
+        {
+            
+            IEnumerable<Database> databases = InfluxHelper.GetDatabase();
+            bool has = false;
+            foreach(Database database in databases)
+            {
+                if (database.Name == dbName)
+                {
+                    has = true;
+                    break;
+                }
+            }
+            if (!has)
+            {
+                if (InfluxHelper.CreateDatabase(dbName))
+                    Console.WriteLine("Database {0} created.", dbName);
+                if (InfluxHelper.CreateRetentionPolicy(dbName, min1BarPolicyName, "365d", 1))
+                    Console.WriteLine("Retention policy {0} created.", min1BarPolicyName);
+                if (InfluxHelper.CreateRetentionPolicy(dbName, tradePolicyName, "30d", 1))
+                    Console.WriteLine("Retention policy {0} created.", tradePolicyName);
+            }
         }
     }
 }

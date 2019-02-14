@@ -16,7 +16,6 @@ namespace HuaQuant.TradeDatacenter
 
             if (this.dataDate == null) this.dataDate = DateTime.Today;
             string lastTime = Utils.DateTimeToString((DateTime)this.dataDate);
-            Console.WriteLine(lastTime);
             foreach(string symbol in symbols)
             {
                 this.lastTimes.Add(symbol, lastTime);
@@ -25,7 +24,6 @@ namespace HuaQuant.TradeDatacenter
         
         protected override bool doJob()
         {
-            TradeDataAccessor.StartBatchWriter();
             string endTime = Utils.DateTimeToString(DateTime.Now);
             foreach (string symbol in this.symbols)
             {
@@ -36,7 +34,6 @@ namespace HuaQuant.TradeDatacenter
                 if (data.Count > 0)
                 {
                     this.lastTimes[symbol] = Utils.DateTimeToString(data.Last().BeginTime);
-                    //TradeDataAccessor.StoreMin1Bars(symbol, data);
                     TradeDataAccessor.BatchStoreMin1Bars(symbol, data);
                     //Console.WriteLine("{0} get data {1}", this.Name, data.Count);
                 }
