@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using HuaQuant.TradeDataCollector;
 using HuaQuant.TradeDatacenter;
+using HuaQuant.TradeDataAccess;
 using System.Reflection;
 using InfluxData.Net.Common;
 using InfluxData.Net.Common.Enums;
@@ -100,23 +101,29 @@ namespace Test
             //Console.ReadKey();
             //Console.WriteLine();
             //IJob job = new Min1Job("HistoryBars", "TradeDataCollector.SinaCollector", new string[] { "SHSE.600025" }, DateTime.Today);
-             string influxUrl = "http://localhost:8086/";
-             string username = "admin";
-             string password = "admin";
-             InfluxDbClient _instance = new InfluxDbClient(influxUrl, username, password, InfluxDbVersion.Latest);
-            string query = "select * from \"Bar.60\" where \"Symbol\"='SHSE.600025'" ;
-            var series = _instance.Client.QueryAsync(query, "Finance").Result;
-            Console.WriteLine(series.Count());
-            foreach(var serie in series)
+            // string influxUrl = "http://localhost:8086/";
+            // string username = "admin";
+            // string password = "admin";
+            // InfluxDbClient _instance = new InfluxDbClient(influxUrl, username, password, InfluxDbVersion.Latest);
+            //string query = "select * from \"Bar.60\" where \"Symbol\"='SHSE.600025'" ;
+            //var series = _instance.Client.QueryAsync(query, "Finance").Result;
+            //Console.WriteLine(series.Count());
+            //foreach(var serie in series)
+            //{
+            //    Console.WriteLine(serie.Values.Count());
+            //}
+            //Console.ReadKey();
+            //IEnumerable<SerieSet> ret = _instance.Serie.GetSeriesAsync("Finance").Result;
+            //foreach (SerieSet ss in ret)
+            //{
+            //    Console.WriteLine(ss.Name);
+            //    Console.WriteLine(ss.Series[0].Key);
+            //}
+            //Console.ReadKey();
+            List<Instrument> instruments = TradeDataAccessor.GetInstruments();
+            foreach(Instrument inst in instruments)
             {
-                Console.WriteLine(serie.Values.Count());
-            }
-            Console.ReadKey();
-            IEnumerable<SerieSet> ret = _instance.Serie.GetSeriesAsync("Finance").Result;
-            foreach (SerieSet ss in ret)
-            {
-                Console.WriteLine(ss.Name);
-                Console.WriteLine(ss.Series[0].Key);
+                Console.WriteLine(inst.Symbol);
             }
             Console.ReadKey();
         }

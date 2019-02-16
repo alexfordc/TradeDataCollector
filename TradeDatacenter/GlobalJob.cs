@@ -29,8 +29,10 @@ namespace HuaQuant.TradeDatacenter
             if (curDay == tradeDay)
             {
                 List<Instrument> insts = new List<Instrument>();
-                insts.AddRange(gmc.GetInstruments("SHSE", "stock"));
-                insts.AddRange(gmc.GetInstruments("SZSE", "stock"));
+                foreach (string market in this.config.Markets)
+                {
+                    insts.AddRange(gmc.GetInstruments(market, "stock"));
+                }
                 TradeDataAccessor.StoreInstruments(insts).Wait();
                 List<string> symbols = insts.Where(e=>e.IsSuspended==false).Select(e => e.Symbol).ToList();
                 Console.WriteLine("今日开市证券：{0}只",symbols.Count);

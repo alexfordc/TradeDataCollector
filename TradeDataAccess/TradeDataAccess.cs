@@ -13,10 +13,6 @@ namespace HuaQuant.TradeDataAccess
     {
         private static Dictionary<string, IBatchWriter> batchWriters = new Dictionary<string, IBatchWriter>();
         private static object _locker = new Object();
-        static TradeDataAccessor()
-        {
-            DatabaseInit();
-        }
         public static void SetRedisConnectString(string connStr)
         {
             RedisHelper.SetConnectString(connStr);
@@ -272,7 +268,7 @@ namespace HuaQuant.TradeDataAccess
         private static string dbName = "Stock";
         private static string min1BarPolicyName = "OneYear";
         private static string tradePolicyName = "OneMonth";
-        private static void DatabaseInit()
+        public static void DatabaseInit()
         {
             
             IEnumerable<Database> databases = InfluxHelper.GetDatabase();

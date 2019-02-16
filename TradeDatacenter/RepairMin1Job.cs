@@ -27,7 +27,7 @@ namespace HuaQuant.TradeDatacenter
                     Console.WriteLine("{0} get data {1} of {2}", this.Name, data.Count,symbol);
                 }
             }
-            Console.WriteLine("{0} run {1} times", this.Name, this.Times);
+            Console.WriteLine("{0} run {1} times", this.Name, this.Times+1);
             return true;
         }
     }

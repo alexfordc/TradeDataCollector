@@ -34,5 +34,41 @@ namespace HuaQuant.TradeDatacenter.Properties {
                 this["RedisConnString"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("http://localhost:8086/")]
+        public string InfluxUrl {
+            get {
+                return ((string)(this["InfluxUrl"]));
+            }
+            set {
+                this["InfluxUrl"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("admin")]
+        public string InfluxUser {
+            get {
+                return ((string)(this["InfluxUser"]));
+            }
+            set {
+                this["InfluxUser"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("admin")]
+        public string InfluxPassword {
+            get {
+                return ((string)(this["InfluxPassword"]));
+            }
+            set {
+                this["InfluxPassword"] = value;
+            }
+        }
     }
 }

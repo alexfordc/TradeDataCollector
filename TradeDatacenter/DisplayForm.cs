@@ -16,17 +16,33 @@ namespace HuaQuant.TradeDatacenter
     public partial class DisplayForm : Form
     {
         private List<Instrument> instruments;
+        private Thread showDataThread = null;
+        private Thread downloadThread = null;
+
         public DisplayForm()
         {
             InitializeComponent();
         }
 
         private void BtnShowQuotation_Click(object sender, EventArgs e)
-        {           
+        {
+            if (showDataThread != null &&
+                showDataThread.ThreadState != ThreadState.Stopped &&
+                showDataThread.ThreadState != ThreadState.Aborted)
+            {
+                showDataThread.Abort();
+            }
+            curSymbol = this.CmbSymbol.Text;
+            showDataThread = new Thread(new ThreadStart(ShowQuotation));
+            showDataThread.Start();
+        }
+
+        private void ShowQuotation()
+        {
             Dictionary<string, Tick> currentTicks = TradeDataAccessor.GetCurrentTicks();
 
             QuotationDataTable qdt = new QuotationDataTable();
-            foreach(Instrument inst in this.instruments)
+            foreach (Instrument inst in this.instruments)
             {
                 DataRow dr = qdt.NewRow();
                 dr["Symbol"] = inst.Symbol;
@@ -53,23 +69,33 @@ namespace HuaQuant.TradeDatacenter
                         dr["AskPrice" + i.ToString()] = tick.Quotes[i].AskPrice;
                         dr["AskVolume" + i.ToString()] = tick.Quotes[i].AskVolume;
                     }
-                    dr["DateTime"] =Utils.DateTimeToString(tick.DateTime);
+                    dr["DateTime"] = Utils.DateTimeToString(tick.DateTime);
                     dr["Source"] = tick.Source;
                 }
                 qdt.Rows.Add(dr);
             }
-            this.dataGridView1.DataSource = qdt;
-            this.dataGridView1.Columns[35].DefaultCellStyle.Format = "yyyy-MM-dd HH:mm:ss";
-            this.dataGridView1.Columns[35].Width = 160;
+            this.RefreshData(this.dataGridView1, qdt);
+            this.ChangeColumnStyle(this.dataGridView1.Columns[35]);
         }
-
         private void BtnShowMin1Bar_Click(object sender, EventArgs e)
         {
-            string symbol = this.CmbSymbol.Text;
-            if (symbol == "") MessageBox.Show("please input the symbol!");
+            if (showDataThread != null &&
+                showDataThread.ThreadState != ThreadState.Stopped &&
+                showDataThread.ThreadState != ThreadState.Aborted)
+            {
+                showDataThread.Abort();               
+            }
+            curSymbol = this.CmbSymbol.Text;
+            showDataThread = new Thread(new ThreadStart(ShowMin1Bar));
+            showDataThread.Start();
+        }
+        private string curSymbol="";
+        private void ShowMin1Bar()
+        {
+            if (curSymbol == "") MessageBox.Show("请选择证券!");
             else
             {
-                List<Bar> bars = TradeDataAccessor.GetMin1Bars(symbol);
+                List<Bar> bars = TradeDataAccessor.GetMin1Bars(curSymbol);
                 BarDataTable bdt = new BarDataTable();
                 foreach (Bar bar in bars)
                 {
@@ -86,23 +112,90 @@ namespace HuaQuant.TradeDatacenter
                     dr["Size"] = bar.Size;
                     bdt.Rows.Add(dr);
                 }
-                this.dataGridView1.DataSource = bdt;
+                RefreshData(this.dataGridView1, bdt);
             }
         }
-
+        private void BtnShowDay1Bar_Click(object sender, EventArgs e)
+        {
+            if (showDataThread != null &&
+                showDataThread.ThreadState != ThreadState.Stopped &&
+                showDataThread.ThreadState != ThreadState.Aborted)
+            {
+                showDataThread.Abort();
+            }
+            curSymbol = this.CmbSymbol.Text;
+            showDataThread = new Thread(new ThreadStart(ShowDay1Bar));
+            showDataThread.Start();
+        }
+        private void ShowDay1Bar()
+        {
+            if (curSymbol == "") MessageBox.Show("请选择证券!");
+            else
+            {
+                List<Bar> bars = TradeDataAccessor.GetDay1Bars(curSymbol);
+                BarDataTable bdt = new BarDataTable();
+                foreach (Bar bar in bars)
+                {
+                    DataRow dr = bdt.NewRow();
+                    dr["BeginTime"] = bar.BeginTime;
+                    dr["EndTime"] = bar.EndTime;
+                    dr["LastClose"] = bar.LastClose;
+                    dr["Open"] = bar.Open;
+                    dr["High"] = bar.High;
+                    dr["Low"] = bar.Low;
+                    dr["Close"] = bar.Close;
+                    dr["Volume"] = bar.Volume;
+                    dr["Amount"] = bar.Amount;
+                    dr["Size"] = bar.Size;
+                    bdt.Rows.Add(dr);
+                }
+                RefreshData(this.dataGridView1, bdt);
+            }
+        }
         private void DisplayForm_Load(object sender, EventArgs e)
         {
-            instruments = TradeDataAccessor.GetInstruments();
-            List<string> symbols = instruments.Select(i => i.Symbol).OrderBy(i=>i).ToList();
-            this.CmbSymbol.DataSource = symbols;
             this.DtpBeginTime.Value = DateTime.Today.AddDays(-7);
             this.DtpEndTime.Value = DateTime.Today;
+            Thread curThread = new Thread(new ThreadStart(LoadInstruments));
+            curThread.Start();
         }
-
+        private void LoadInstruments()
+        {
+            RefreshLabel(lblDisplay, "当前进度：正在读取证券信息......");
+            instruments = TradeDataAccessor.GetInstruments();
+            List<string> symbols = instruments.Select(i => i.Symbol).OrderBy(i => i).ToList();
+            RefreshComboBox(this.CmbSymbol, symbols);
+            RefreshLabel(lblDisplay, "当前进度：读取证券信息完毕。");
+        }
         private void BtnClearRedis_Click(object sender, EventArgs e)
         {
             TradeDataAccessor.ClearRedis();
         }
+
+        private void ChangeColumnStyle(DataGridViewColumn column)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new ChangeColumnStyleDelegate(this.ChangeColumnStyle), column);
+            }
+            else
+            {
+                column.DefaultCellStyle.Format = "yyyy-MM-dd HH:mm:ss";
+                column.Width = 160;
+            }
+        }
+
+        private void RefreshComboBox(ComboBox cmb,List<string> data)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new RefreshComboBoxDelegate(this.RefreshComboBox), cmb, data);
+            }else
+            {
+                cmb.DataSource = data;
+            }
+        }
+        
         private void RefreshLabel(Label lbl, string text)
         {
             if (this.InvokeRequired)
@@ -124,27 +217,41 @@ namespace HuaQuant.TradeDatacenter
                 pgb.Value = value;
             }
         }
-        private void RefreshPlateData(DataGridView dgv, DataTable dt)
+        private void RefreshData(DataGridView dgv, DataTable dt)
         {
             if (this.InvokeRequired)
             {
-                this.Invoke(new RefreshDataDelegate(this.RefreshPlateData), dgv, dt);
+                this.Invoke(new RefreshDataDelegate(this.RefreshData), dgv, dt);
             }
             else
             {
                 dgv.DataSource = dt;
             }
         }
+        private delegate void ChangeColumnStyleDelegate(DataGridViewColumn column);
+        private delegate void RefreshComboBoxDelegate(ComboBox cmb, List<string> data);
         private delegate void RefreshProgressBarDelegate(ProgressBar pgb, int value);
         private delegate void RefreshDataDelegate(DataGridView dgv, DataTable dt);
         private delegate void RefreshLabelDelegate(Label lbl, string text);
-        private Thread curThread = null;
+        
         private void BtnDownloadMin1Bar_Click(object sender, EventArgs e)
         {
+            if (downloadThread!=null&&
+                downloadThread.ThreadState!=ThreadState.Stopped&&
+                downloadThread.ThreadState != ThreadState.Aborted)
+            {
+                DialogResult answer = MessageBox.Show("已有一个下载线程正在运行中，是否中止它开启新的下载？",
+                    "询问", MessageBoxButtons.OKCancel);
+                if (answer == DialogResult.OK)
+                {
+                    downloadThread.Abort();
+                }
+                else return;
+            }
             this.PgbDisplay.Maximum = this.CmbSymbol.Items.Count;
             this.PgbDisplay.Value = 0;
-            curThread = new Thread(new ThreadStart(DownLoadMin1Bar));
-            curThread.Start();
+            downloadThread = new Thread(new ThreadStart(DownLoadMin1Bar));
+            downloadThread.Start();
         }
         private void DownLoadMin1Bar()
         {
@@ -173,20 +280,32 @@ namespace HuaQuant.TradeDatacenter
 
         private void BtnStopDownload_Click(object sender, EventArgs e)
         {
-            if (curThread != null &&
-                curThread.ThreadState != ThreadState.Stopped &&
-                curThread.ThreadState != ThreadState.Aborted)
+            if (downloadThread != null &&
+                downloadThread.ThreadState != ThreadState.Stopped &&
+                downloadThread.ThreadState != ThreadState.Aborted)
             {
-                curThread.Abort();
+                downloadThread.Abort();
             }
         }
 
         private void BtnDownloadDailyBar_Click(object sender, EventArgs e)
         {
+            if (downloadThread != null &&
+                downloadThread.ThreadState != ThreadState.Stopped &&
+                downloadThread.ThreadState != ThreadState.Aborted)
+            {
+                DialogResult answer = MessageBox.Show("已有一个下载线程正在运行中，是否中止它开启新的下载？",
+                    "询问", MessageBoxButtons.OKCancel);
+                if (answer == DialogResult.OK)
+                {
+                    downloadThread.Abort();
+                }
+                else return;
+            }
             this.PgbDisplay.Maximum = this.CmbSymbol.Items.Count;
             this.PgbDisplay.Value = 0;
-            curThread = new Thread(new ThreadStart(DownloadDailyBar));
-            curThread.Start();
+            downloadThread = new Thread(new ThreadStart(DownloadDailyBar));
+            downloadThread.Start();
         }
         private void DownloadDailyBar()
         {
@@ -213,30 +332,23 @@ namespace HuaQuant.TradeDatacenter
             RefreshLabel(this.lblDisplay, text);
         }
 
-        private void BtnShowDay1Bar_Click(object sender, EventArgs e)
+        
+
+        private void DisplayForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            string symbol = this.CmbSymbol.Text;
-            if (symbol == "") MessageBox.Show("please input the symbol!");
-            else
+            if (downloadThread != null &&
+                downloadThread.ThreadState != ThreadState.Stopped &&
+                downloadThread.ThreadState != ThreadState.Aborted)
             {
-                List<Bar> bars = TradeDataAccessor.GetDay1Bars(symbol);
-                BarDataTable bdt = new BarDataTable();
-                foreach (Bar bar in bars)
-                {
-                    DataRow dr = bdt.NewRow();
-                    dr["BeginTime"] = bar.BeginTime;
-                    dr["EndTime"] = bar.EndTime;
-                    dr["LastClose"] = bar.LastClose;
-                    dr["Open"] = bar.Open;
-                    dr["High"] = bar.High;
-                    dr["Low"] = bar.Low;
-                    dr["Close"] = bar.Close;
-                    dr["Volume"] = bar.Volume;
-                    dr["Amount"] = bar.Amount;
-                    dr["Size"] = bar.Size;
-                    bdt.Rows.Add(dr);
-                }
-                this.dataGridView1.DataSource = bdt;
+                downloadThread.Abort();
+                downloadThread.Join();
+            }
+            if (showDataThread != null &&
+                showDataThread.ThreadState != ThreadState.Stopped &&
+                showDataThread.ThreadState != ThreadState.Aborted)
+            {
+                showDataThread.Abort();
+                showDataThread.Join();
             }
         }
     }

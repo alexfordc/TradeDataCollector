@@ -214,6 +214,7 @@
             this.Controls.Add(this.dataGridView1);
             this.Name = "DisplayForm";
             this.Text = "数据查看";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.DisplayForm_FormClosing);
             this.Load += new System.EventHandler(this.DisplayForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
