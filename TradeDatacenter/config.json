@@ -1,9 +1,10 @@
 {
+  "Markets": ["SHSE","SZSE"],
   "DataJobConfigs": [
     {
       "ClassName": "HuaQuant.TradeDatacenter.QuotationJob",
       "TimeInterval": "00:00:01",
-      "BeginTime": "9:20:00",
+      "BeginTime": "9:25:00",
       "EndTime": "15:03:00",
       "DataCollectors": [
         {
