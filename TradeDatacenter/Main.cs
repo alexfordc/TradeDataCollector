@@ -73,7 +73,7 @@ namespace HuaQuant.TradeDatacenter
 
         private void btnStop_Click(object sender, EventArgs e)
         {
-            this.jobSche.Stop();
+            if (jobSche != null) jobSche.Stop();
         }
 
         private void BtnDisplay_Click(object sender, EventArgs e)
@@ -85,7 +85,7 @@ namespace HuaQuant.TradeDatacenter
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             Console.WriteLine("中止所有作业执行,请等待......");
-            jobSche.Stop();
+            if (jobSche!=null) jobSche.Stop();
             Console.Out.Close();
         }
     }
