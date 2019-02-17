@@ -33,6 +33,7 @@ namespace HuaQuant.JobSchedule
                 if (kvp.Value != null && kvp.Value.ThreadState != ThreadState.Aborted && kvp.Value.ThreadState != ThreadState.Stopped)
                 {
                     kvp.Value.Abort();
+                    kvp.Value.Join();
                 }
             }
             threads.Clear();

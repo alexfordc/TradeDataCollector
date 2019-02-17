@@ -143,6 +143,7 @@
             this.Name = "MainForm";
             this.Text = "数据中心";
             this.Deactivate += new System.EventHandler(this.MainForm_Deactivate);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.myMenu.ResumeLayout(false);
             this.ResumeLayout(false);

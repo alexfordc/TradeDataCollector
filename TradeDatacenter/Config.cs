@@ -9,7 +9,7 @@ namespace HuaQuant.TradeDatacenter
     {
         
         public List<DataJobConfig> DataJobConfigs;
-        public List<string> Markets;
+        public string Markets;
         private Config() { }
 
         public static Config ReadFromFile(string fileName)

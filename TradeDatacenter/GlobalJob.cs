@@ -29,13 +29,13 @@ namespace HuaQuant.TradeDatacenter
             if (curDay == tradeDay)
             {
                 List<Instrument> insts = new List<Instrument>();
-                foreach (string market in this.config.Markets)
+                foreach (string market in this.config.Markets.Split(','))
                 {
                     insts.AddRange(gmc.GetInstruments(market, "stock"));
                 }
                 TradeDataAccessor.StoreInstruments(insts).Wait();
                 List<string> symbols = insts.Where(e=>e.IsSuspended==false).Select(e => e.Symbol).ToList();
-                Console.WriteLine("今日开市证券：{0}只",symbols.Count);
+                Console.WriteLine("市场<{0}>今日开市证券：{1}只",config.Markets,symbols.Count);
                 foreach (DataJobConfig dataJobConfig in config.DataJobConfigs)
                 {
                     if (dataJobConfig.SubJobs != null && dataJobConfig.SubJobs.Count > 0) {

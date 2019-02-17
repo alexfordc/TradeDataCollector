@@ -1,5 +1,5 @@
 {
-  "Markets": ["SHSE","SZSE"],
+  "Markets": "SHSE,SZSE",
   "DataJobConfigs": [
     {
       "ClassName": "HuaQuant.TradeDatacenter.QuotationJob",

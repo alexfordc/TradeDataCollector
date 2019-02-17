@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 using HuaQuant.JobSchedule;
 
 namespace HuaQuant.TradeDatacenter
@@ -79,6 +80,13 @@ namespace HuaQuant.TradeDatacenter
         {
             Form displayForm = new DisplayForm();
             displayForm.Show();
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Console.WriteLine("中止所有作业执行,请等待......");
+            jobSche.Stop();
+            Console.Out.Close();
         }
     }
 }
