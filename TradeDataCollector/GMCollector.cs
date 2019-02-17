@@ -9,9 +9,9 @@ namespace HuaQuant.TradeDataCollector
 {
     public class GMCollector:ICollector
     {
-        public GMCollector()
+        public static void SetToken(string token)
         {
-            GMApi.SetToken("48da7cef9d32b7f33bf043f493c3feec4a26958b");
+            GMApi.SetToken(token);
         }
         public Dictionary<string, Tick> Current(IEnumerable<string> symbols)
         {

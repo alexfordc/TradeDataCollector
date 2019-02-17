@@ -70,5 +70,17 @@ namespace HuaQuant.TradeDatacenter.Properties {
                 this["InfluxPassword"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("dd16861071a1ae0b7050bf3a14d28f5a6eea6847")]
+        public string GMToken {
+            get {
+                return ((string)(this["GMToken"]));
+            }
+            set {
+                this["GMToken"] = value;
+            }
+        }
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using HuaQuant.TradeDataAccess;
+using HuaQuant.TradeDataCollector;
 
 namespace HuaQuant.TradeDatacenter
 {
@@ -19,9 +20,9 @@ namespace HuaQuant.TradeDatacenter
             TradeDataAccessor.SetInfluxConnectParameters(Properties.Settings.Default.InfluxUrl,
                 Properties.Settings.Default.InfluxUser, Properties.Settings.Default.InfluxPassword);
             TradeDataAccessor.DatabaseInit();
+            GMCollector.SetToken(Properties.Settings.Default.GMToken);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            
             Application.Run(new MainForm());
         }
     }

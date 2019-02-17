@@ -14,5 +14,8 @@
     <Setting Name="InfluxPassword" Type="System.String" Scope="User">
       <Value Profile="(Default)">admin</Value>
     </Setting>
+    <Setting Name="GMToken" Type="System.String" Scope="User">
+      <Value Profile="(Default)">dd16861071a1ae0b7050bf3a14d28f5a6eea6847</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
