@@ -122,7 +122,8 @@ namespace HuaQuant.TradeDataAccess
             List<string> keys = RedisHelper.GetKeys("??SE.??????.Instrument");
             foreach(string key in keys)
             {
-                ret.Add((Instrument)RedisHelper.Get(key));
+                //ret.Add((Instrument)RedisHelper.Get(key));
+                ret.Add(RedisHelper.Get<Instrument>(key));
             }
             return ret;
         }
@@ -132,7 +133,8 @@ namespace HuaQuant.TradeDataAccess
             List<string> keys = RedisHelper.GetKeys("??SE.??????");
             foreach (string key in keys)
             {
-                ret.Add(key, (Tick)RedisHelper.Get(key));
+                //ret.Add(key, (Tick)RedisHelper.Get(key));
+                ret.Add(key, RedisHelper.Get<Tick>(key));
             }
             return ret;
         }
