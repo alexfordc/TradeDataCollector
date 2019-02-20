@@ -23,11 +23,11 @@ namespace HuaQuant.TradeDatacenter
         }
         
         protected override bool doJob()
-        {
-            string endTime = Utils.DateTimeToString(DateTime.Now);
+        {           
             foreach (string symbol in this.symbols)
             {
                 string beginTime = this.lastTimes[symbol];
+                string endTime = Utils.DateTimeToString(DateTime.Now);
                 object[] parameters = new object[] { symbol, 60, beginTime, endTime };
                 List<Bar> data = (List<Bar>)this.invokeMethod(parameters);
                 
