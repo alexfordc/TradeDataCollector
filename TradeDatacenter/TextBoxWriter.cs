@@ -23,9 +23,8 @@ namespace HuaQuant.TradeDatacenter
             writeLine = WriteLine;
         }
 
-
-        // 使用UTF-16避免不必要的编码转换
-        public override Encoding Encoding
+        // 使用UTF-16避免不必要的编码转换
+        public override Encoding Encoding
         {
             get { return Encoding.Unicode; }
         }
@@ -50,6 +49,10 @@ namespace HuaQuant.TradeDatacenter
             {
                 textBox.AppendText(value);
                 textBox.AppendText(this.NewLine);
+                if (this.textBox.Lines.Length >= 30000)
+                {
+                    this.textBox.Lines = this.textBox.Lines.Skip(10000).ToArray();
+                }
             }
         }
     }

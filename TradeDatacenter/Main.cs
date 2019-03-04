@@ -25,6 +25,7 @@ namespace HuaQuant.TradeDatacenter
         private void MainForm_Load(object sender, EventArgs e)
         {
             Console.SetOut(new TextBoxWriter(this.txtLog));
+            if (Program.ErrorMsg.Length > 0) Console.WriteLine(Program.ErrorMsg);
             try
             {
                 config = Config.ReadFromFile("config.json");

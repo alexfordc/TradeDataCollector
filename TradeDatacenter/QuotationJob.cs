@@ -18,7 +18,8 @@ namespace HuaQuant.TradeDatacenter
             object[] parameters = new object[] { this.symbols };
             Dictionary<string, Tick> data = (Dictionary<string, Tick>)this.invokeMethod(parameters);
             int lost = this.symbols.Count() - data.Count;
-            Console.WriteLine("{0} get data {1} ,lost data {2}", this.Name, data.Count,lost);
+            //Console.WriteLine("{0} get data {1} ,lost data {2}", this.Name, data.Count,lost);
+            if (lost > 0) Console.WriteLine("{0} lost data {1}", this.Name, lost);
             TradeDataAccessor.StoreCurrentTicks(data);
             return true;
         }
