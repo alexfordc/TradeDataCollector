@@ -13,7 +13,7 @@ namespace HuaQuant.TradeDatacenter
         {
             if (this.dataDate == null) this.dataDate = DateTime.Today;
         }
-        protected override bool doJob()
+        public override bool Execute()
         {
             string beginTime = Utils.DateTimeToString((DateTime)this.dataDate);
             string endTime = Utils.DateTimeToString(((DateTime)this.dataDate).Date.AddDays(1));
@@ -27,7 +27,7 @@ namespace HuaQuant.TradeDatacenter
                     Console.WriteLine("{0} get data {1} of {2}", this.Name, data.Count, symbol);
                 }
             }
-            Console.WriteLine("{0} run {1} times", this.Name, this.Times+1);
+            Console.WriteLine("{0} run {1} times", this.Name, this.Frequencies+1);
             return true;
         }
     }

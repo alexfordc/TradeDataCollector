@@ -9,6 +9,7 @@ namespace HuaQuant.TradeDataCollector
 {
     public class GMCollector:ICollector
     {
+        private object locker=new object();
         public static void SetToken(string token)
         {
             GMApi.SetToken(token);
@@ -18,7 +19,11 @@ namespace HuaQuant.TradeDataCollector
             Dictionary<string, Tick> ret = new Dictionary<string, Tick>();
             string symbolString = "";
             foreach (string symbol in symbols) symbolString += symbol + ",";
-            GMDataList<GMSDK.Tick> dataList = GMApi.Current(symbolString);
+            GMDataList<GMSDK.Tick> dataList;
+            lock (this.locker)
+            {
+                dataList = GMApi.Current(symbolString);
+            }
             if (dataList.status != 0)
             {
                 throw new Exception(this.GetErrorMsg(dataList.status));
@@ -74,7 +79,12 @@ namespace HuaQuant.TradeDataCollector
         {
             List<Bar> ret = new List<Bar>();
             if (endTime == "") endTime =Utils.DateTimeToString(DateTime.Now);
-            GMDataList<GMSDK.Bar> dataList = GMApi.HistoryBars(symbol,string.Format("{0}s",size), startTime, endTime);
+            GMDataList<GMSDK.Bar> dataList;
+            lock (this.locker)
+            {
+                dataList = GMApi.HistoryBars(symbol, string.Format("{0}s", size), startTime, endTime);
+            }
+
             if (dataList.status != 0)
             {
                 throw new Exception(this.GetErrorMsg(dataList.status));
@@ -104,7 +114,11 @@ namespace HuaQuant.TradeDataCollector
         {
             List<Bar> ret = new List<Bar>();
             if (endTime == "") endTime = Utils.DateTimeToString(DateTime.Now);
-            GMDataList<GMSDK.Bar> dataList = GMApi.HistoryBarsN(symbol, string.Format("{0}s", size), n, endTime);
+            GMDataList<GMSDK.Bar> dataList;
+            lock (this.locker)
+            {
+                dataList = GMApi.HistoryBarsN(symbol, string.Format("{0}s", size), n, endTime);
+            }
             if (dataList.status != 0)
             {
                 throw new Exception(this.GetErrorMsg(dataList.status));
@@ -133,7 +147,11 @@ namespace HuaQuant.TradeDataCollector
         {
             List<Trade> ret=new List<Trade>();
             if (endTime == "") endTime = Utils.DateTimeToString(DateTime.Now);
-            GMDataList<GMSDK.Tick> dataList=GMApi.HistoryTicks(symbol,startTime,endTime);
+            GMDataList<GMSDK.Tick> dataList;
+            lock (this.locker)
+            {
+                dataList = GMApi.HistoryTicks(symbol, startTime, endTime);
+            }
             if (dataList.status != 0)
             {
                 throw new Exception(this.GetErrorMsg(dataList.status));
@@ -170,7 +188,11 @@ namespace HuaQuant.TradeDataCollector
         {
             List<Trade> ret=new List<Trade>();
             if (endTime == "") endTime = Utils.DateTimeToString(DateTime.Now);
-            GMDataList<GMSDK.Tick> dataList=GMApi.HistoryTicksN(symbol,n,endTime);
+            GMDataList<GMSDK.Tick> dataList;
+            lock (this.locker)
+            {
+                dataList = GMApi.HistoryTicksN(symbol, n, endTime);
+            }
             if (dataList.status != 0)
             {
                 throw new Exception(this.GetErrorMsg(dataList.status));
@@ -209,7 +231,11 @@ namespace HuaQuant.TradeDataCollector
 
         public DateTime GetNextTradingDate(string exchange, DateTime date)
         {
-            GMData<DateTime> dataList = GMApi.GetNextTradingDate(exchange, Utils.DateToString(date));
+            GMData<DateTime> dataList;
+            lock (this.locker)
+            {
+                dataList = GMApi.GetNextTradingDate(exchange, Utils.DateToString(date));
+            }
             if (dataList.status != 0)
             {
                 throw new Exception(this.GetErrorMsg(dataList.status));
@@ -219,7 +245,11 @@ namespace HuaQuant.TradeDataCollector
         public List<Instrument> GetInstruments(string exchanges, string secTypes)
         {
             List<Instrument> ret = new List<Instrument>();
-            GMData<DataTable> dataList = GMApi.GetInstruments(null, exchanges, secTypes);
+            GMData<DataTable> dataList;
+            lock (this.locker)
+            {
+                dataList = GMApi.GetInstruments(null, exchanges, secTypes);
+            }
             if (dataList.status == 0)
             {
                 foreach(DataRow dr in dataList.data.Rows)

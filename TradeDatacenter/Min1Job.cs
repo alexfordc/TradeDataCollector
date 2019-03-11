@@ -22,7 +22,7 @@ namespace HuaQuant.TradeDatacenter
             }
         }
         
-        protected override bool doJob()
+        public override bool Execute()
         {           
             foreach (string symbol in this.symbols)
             {
@@ -38,7 +38,7 @@ namespace HuaQuant.TradeDatacenter
                     //Console.WriteLine("{0} get data {1}", this.Name, data.Count);
                 }
             }
-            Console.WriteLine("{0} run {1} times", this.Name,this.Times+1);
+            Console.WriteLine("{0} run {1} times", this.Name,this.Frequencies+1);
             return true;
         }
     }

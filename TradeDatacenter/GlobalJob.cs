@@ -21,7 +21,7 @@ namespace HuaQuant.TradeDatacenter
             this.jobSche = jobSche;
             Type type = this.GetType();
         }
-        protected override bool doJob()
+        public override bool Execute()
         {
             DateTime curDay = DateTime.Today;
             Console.WriteLine("当前日期:{0}", curDay.ToLongDateString());
@@ -38,9 +38,10 @@ namespace HuaQuant.TradeDatacenter
                 Console.WriteLine("市场<{0}>今日开市证券：{1}只",config.Markets,symbols.Count);
                 foreach (DataJobConfig dataJobConfig in config.DataJobConfigs)
                 {
-                    if (dataJobConfig.SubJobs != null && dataJobConfig.SubJobs.Count > 0) {
-                        JobQueue jobQueue = new JobQueue();
-                        foreach(DataJobConfig subDataJobConfig in dataJobConfig.SubJobs)
+                    if (dataJobConfig.SubJobs != null && dataJobConfig.SubJobs.Count > 0)
+                    {
+                        JobQueue jobQueue = new JobQueue("JobQueue");
+                        foreach (DataJobConfig subDataJobConfig in dataJobConfig.SubJobs)
                         {
                             int i = 0;
                             float weightTotal = 0;
@@ -53,12 +54,11 @@ namespace HuaQuant.TradeDatacenter
                                 Type type = Type.GetType(subDataJobConfig.ClassName, (aName) => Assembly.LoadFrom(aName.Name),
                     (assem, name, ignore) => assem == null ? Type.GetType(name, false, ignore) : assem.GetType(name, false, ignore));
                                 Job job = (Job)Activator.CreateInstance(type, parameters);
-                                
-                                jobQueue.Add(job);
+
+                                jobQueue.AddJob(job);
                                 //Console.WriteLine(job.Name);
                             }
                         }
-                        
                         jobSche.Add(jobQueue, buildTrigger(dataJobConfig));
                     }
                     else
@@ -85,20 +85,22 @@ namespace HuaQuant.TradeDatacenter
             {
                 Console.WriteLine("今天不是交易日。");
             }
+            
             return true;
         }
 
-        private JobTrigger buildTrigger(DataJobConfig dataJobConfig)
+        private ITrigger buildTrigger(DataJobConfig dataJobConfig)
         {
             DateTime? beginTime, endTime;
-            if (dataJobConfig.BeginTime != null) beginTime = DateTime.Parse(dataJobConfig.BeginTime);
+            if (dataJobConfig.Trigger.BeginTime != null) beginTime = DateTime.Parse(dataJobConfig.Trigger.BeginTime);
             else beginTime = null;
-            if (dataJobConfig.EndTime != null) endTime = DateTime.Parse(dataJobConfig.EndTime);
+            if (dataJobConfig.Trigger.EndTime != null) endTime = DateTime.Parse(dataJobConfig.Trigger.EndTime);
             else endTime = null;
             TimeSpan? timeInterval;
-            if (dataJobConfig.TimeInterval != null) timeInterval = TimeSpan.Parse(dataJobConfig.TimeInterval);
+            if (dataJobConfig.Trigger.TimeInterval != null) timeInterval = TimeSpan.Parse(dataJobConfig.Trigger.TimeInterval);
             else timeInterval = null;
-            JobTrigger trigger = new JobTrigger(beginTime, endTime, dataJobConfig.Times, timeInterval);
+
+            ITrigger trigger = new RepeatTrigger(timeInterval, beginTime, endTime, dataJobConfig.Trigger.Times);
             return trigger;
         }
     }

@@ -12,9 +12,8 @@ namespace HuaQuant.TradeDatacenter
     {
         public QuotationJob(string methodName, string className, IEnumerable<string> symbols,DateTime? dataDate) : base("QuotationJob", methodName, className, symbols,dataDate) { }
 
-        protected override bool doJob()
+        public override bool Execute()
         {
-
             object[] parameters = new object[] { this.symbols };
             Dictionary<string, Tick> data = (Dictionary<string, Tick>)this.invokeMethod(parameters);
             int lost = this.symbols.Count() - data.Count;

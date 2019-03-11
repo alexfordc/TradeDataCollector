@@ -3,9 +3,11 @@
   "DataJobConfigs": [
     {
       "ClassName": "HuaQuant.TradeDatacenter.QuotationJob",
-      "TimeInterval": "00:00:01",
-      "BeginTime": "9:25:00",
-      "EndTime": "15:03:00",
+	  "Trigger":{
+		"TimeInterval": "00:00:01",
+		"BeginTime": "9:25:00",
+		"EndTime": "15:03:00",
+	  },
       "DataCollectors": [
         {
           "ClassName": "HuaQuant.TradeDataCollector.SinaCollector,HuaQuant.TradeDataCollector.dll",
@@ -26,9 +28,11 @@
     },
     {
       "ClassName": "HuaQuant.TradeDatacenter.Min1Job",
-      "TimeInterval": "00:01:00",
-      "BeginTime": "9:25:00",
-      "EndTime": "15:03:00",
+	  "Trigger":{
+		"TimeInterval": "00:01:00",
+		"BeginTime": "9:25:00",
+		"EndTime": "15:03:00",
+	  },
       "DataCollectors": [
         {
           "ClassName": "HuaQuant.TradeDataCollector.GMCollector,HuaQuant.TradeDataCollector.dll",
@@ -38,8 +42,10 @@
       ]
     },
     {
-      "BeginTime": "20:00:00",
-      "Times": 1,
+	  "Trigger":{
+		"BeginTime": "20:00:00",
+		"Times": 1,
+	   },
       "SubJobs": [
         {
           "ClassName": "HuaQuant.TradeDatacenter.RepairMin1Job",

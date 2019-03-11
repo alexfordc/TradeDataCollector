@@ -34,6 +34,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="HuaQuant.JobSchedule, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\JobSchedule\JobSchedule\bin\Release\HuaQuant.JobSchedule.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -103,10 +107,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\JobSchedule\JobSchedule.csproj">
-      <Project>{efdefc2c-aea8-4d77-8998-3f46167e8e68}</Project>
-      <Name>JobSchedule</Name>
-    </ProjectReference>
     <ProjectReference Include="..\TradeDataAccess\TradeDataAccess.csproj">
       <Project>{2cfa0638-1d81-49d4-b8b5-6ece4938e1aa}</Project>
       <Name>TradeDataAccess</Name>

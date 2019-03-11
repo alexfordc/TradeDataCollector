@@ -25,10 +25,7 @@ namespace HuaQuant.TradeDatacenter
     public class DataJobConfig
     {
         public string ClassName;
-        public string TimeInterval=null;
-        public string BeginTime=null;
-        public string EndTime=null;
-        public int Times=0;
+        public TriggerConfig Trigger;
         public List<DataCollector> DataCollectors;
         public List<DataJobConfig> SubJobs=null;
     }
@@ -37,5 +34,12 @@ namespace HuaQuant.TradeDatacenter
         public string ClassName;
         public string MothedName;
         public float Weight;
+    }
+    public class TriggerConfig
+    {
+        public string TimeInterval = null;
+        public string BeginTime = null;
+        public string EndTime = null;
+        public int? Times = null;
     }
 }

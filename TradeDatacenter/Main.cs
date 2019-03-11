@@ -64,10 +64,13 @@ namespace HuaQuant.TradeDatacenter
         private void BtnStart_Click(object sender, EventArgs e)
         {
             this.jobSche = new JobSchedule.JobSchedule();
+            //this.jobSche.ProcessNumPerJob = 2;
             gJob = new GlobalJob(config,this.jobSche);
             DateTime curDay = DateTime.Today;
-            JobTrigger trigger = new JobTrigger(curDay.Add(new TimeSpan(9, 20, 0)),null, 0, new TimeSpan(1, 0, 0, 0));
-            trigger.IntervalBaseOnBeginTime = true;
+            //ITrigger trigger = new JobTrigger(curDay.Add(new TimeSpan(9, 20, 0)),null, 0, new TimeSpan(1, 0, 0, 0));
+            RepeatTrigger trigger = new RepeatTrigger(new TimeSpan(1, 0, 0, 0), curDay.Add(new TimeSpan(9, 20, 0)),null, null);
+            trigger.IntervalBaseOnStartTime = true;
+            
             this.jobSche.Add(gJob, trigger);
             this.jobSche.Start();
         }
