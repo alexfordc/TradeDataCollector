@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using HuaQuant.TradeDataCollector;
 using HuaQuant.TradeDataAccess;
 namespace HuaQuant.TradeDatacenter
@@ -13,21 +11,25 @@ namespace HuaQuant.TradeDatacenter
         {
             if (this.dataDate == null) this.dataDate = DateTime.Today;
         }
-        public override bool Execute()
+        public override bool Execute(CancellationToken token)
         {
             string beginTime = Utils.DateTimeToString((DateTime)this.dataDate);
             string endTime = Utils.DateTimeToString(((DateTime)this.dataDate).Date.AddDays(1));
             foreach (string symbol in this.symbols)
             {
+                token.ThrowIfCancellationRequested();
                 object[] parameters = new object[] { symbol, 60, beginTime, endTime };
                 List<Bar> data = (List<Bar>)this.invokeMethod(parameters);
                 if (data.Count > 0)
                 {
                     TradeDataAccessor.StoreMin1Bars(symbol, data);
-                    Console.WriteLine("{0} get data {1} of {2}", this.Name, data.Count,symbol);
+                    Console.WriteLine("{0}：{1} 得到数据 {2} 条", this.Name, symbol, data.Count);
+                }
+                else
+                {
+                    Console.WriteLine("{0}：{1} 没有数据", this.Name, symbol);
                 }
             }
-            Console.WriteLine("{0} run {1} times", this.Name, this.Frequencies+1);
             return true;
         }
     }

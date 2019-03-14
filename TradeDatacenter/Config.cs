@@ -26,6 +26,7 @@ namespace HuaQuant.TradeDatacenter
     {
         public string ClassName;
         public TriggerConfig Trigger;
+        public int MaxTaskNumber = 1;
         public List<DataCollector> DataCollectors;
         public List<DataJobConfig> SubJobs=null;
     }

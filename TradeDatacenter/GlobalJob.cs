@@ -2,29 +2,29 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Reflection;
 using HuaQuant.TradeDataCollector;
 using HuaQuant.TradeDataAccess;
-using HuaQuant.JobSchedule;
+using HuaQuant.JobSchedule2;
 namespace HuaQuant.TradeDatacenter
 {
     public class GlobalJob:Job
     {
         private GMCollector gmc = new GMCollector();
         private Config config;
-        private JobSchedule.JobSchedule jobSche;
+        private JobSchedule jobSche;
 
-        public GlobalJob(Config config,JobSchedule.JobSchedule jobSche):base("GlobalJob",null,true)
+        public GlobalJob(Config config,JobSchedule jobSche):base("GlobalJob",null,true)
         {
             this.config = config;
             this.jobSche = jobSche;
             Type type = this.GetType();
         }
-        public override bool Execute()
+        public override bool Execute(CancellationToken token)
         {
             DateTime curDay = DateTime.Today;
-            Console.WriteLine("当前日期:{0}", curDay.ToLongDateString());
+            Console.WriteLine("当前日期：{0}", curDay.ToLongDateString());
             DateTime tradeDay = gmc.GetNextTradingDate("SHSE", curDay.AddDays(-1));
             if (curDay == tradeDay)
             {
@@ -40,7 +40,7 @@ namespace HuaQuant.TradeDatacenter
                 {
                     if (dataJobConfig.SubJobs != null && dataJobConfig.SubJobs.Count > 0)
                     {
-                        JobQueue jobQueue = new JobQueue("JobQueue");
+                        List<IJob> jobQueue = new List<IJob>();
                         foreach (DataJobConfig subDataJobConfig in dataJobConfig.SubJobs)
                         {
                             int i = 0;
@@ -54,9 +54,7 @@ namespace HuaQuant.TradeDatacenter
                                 Type type = Type.GetType(subDataJobConfig.ClassName, (aName) => Assembly.LoadFrom(aName.Name),
                     (assem, name, ignore) => assem == null ? Type.GetType(name, false, ignore) : assem.GetType(name, false, ignore));
                                 Job job = (Job)Activator.CreateInstance(type, parameters);
-
-                                jobQueue.AddJob(job);
-                                //Console.WriteLine(job.Name);
+                                jobQueue.Add(job);
                             }
                         }
                         jobSche.Add(jobQueue, buildTrigger(dataJobConfig));
@@ -74,9 +72,7 @@ namespace HuaQuant.TradeDatacenter
                             Type type = Type.GetType(dataJobConfig.ClassName, (aName) => Assembly.LoadFrom(aName.Name),
                 (assem, name, ignore) => assem == null ? Type.GetType(name, false, ignore) : assem.GetType(name, false, ignore));
                             Job job = (Job)Activator.CreateInstance(type, parameters);
-
-                            //job.ShowDetail = true;
-                            jobSche.Add(job, buildTrigger(dataJobConfig));
+                            jobSche.Add(job, buildTrigger(dataJobConfig),dataJobConfig.MaxTaskNumber);
                         }
                     }
                 }

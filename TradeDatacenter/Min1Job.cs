@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using HuaQuant.TradeDataCollector;
 using HuaQuant.TradeDataAccess;
 
@@ -22,10 +22,11 @@ namespace HuaQuant.TradeDatacenter
             }
         }
         
-        public override bool Execute()
+        public override bool Execute(CancellationToken token)
         {           
             foreach (string symbol in this.symbols)
             {
+                token.ThrowIfCancellationRequested();
                 string beginTime = this.lastTimes[symbol];
                 string endTime = Utils.DateTimeToString(DateTime.Now);
                 object[] parameters = new object[] { symbol, 60, beginTime, endTime };
@@ -35,10 +36,9 @@ namespace HuaQuant.TradeDatacenter
                 {
                     this.lastTimes[symbol] = Utils.DateTimeToString(data.Last().BeginTime);
                     TradeDataAccessor.BatchStoreMin1Bars(symbol, data);
-                    //Console.WriteLine("{0} get data {1}", this.Name, data.Count);
                 }
             }
-            Console.WriteLine("{0} run {1} times", this.Name,this.Frequencies+1);
+            Console.WriteLine("{0}：在 {1} 时请求完一遍分线", this.Name, DateTime.Now);
             return true;
         }
     }

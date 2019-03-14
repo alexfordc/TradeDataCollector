@@ -1,5 +1,5 @@
 {
-  "Markets": "SHSE,SZSE",
+  "Markets": "SHSE",
   "DataJobConfigs": [
     {
       "ClassName": "HuaQuant.TradeDatacenter.QuotationJob",
@@ -7,7 +7,7 @@
 		"TimeInterval": "00:00:01",
 		"BeginTime": "9:25:00",
 		"EndTime": "15:03:00",
-	  },
+	  },  
       "DataCollectors": [
         {
           "ClassName": "HuaQuant.TradeDataCollector.SinaCollector,HuaQuant.TradeDataCollector.dll",
@@ -33,6 +33,7 @@
 		"BeginTime": "9:25:00",
 		"EndTime": "15:03:00",
 	  },
+	"MaxTaskNumber":2,
       "DataCollectors": [
         {
           "ClassName": "HuaQuant.TradeDataCollector.GMCollector,HuaQuant.TradeDataCollector.dll",

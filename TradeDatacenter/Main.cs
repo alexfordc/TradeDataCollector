@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
-using HuaQuant.JobSchedule;
+using HuaQuant.JobSchedule2;
 
 namespace HuaQuant.TradeDatacenter
 {
@@ -16,7 +16,7 @@ namespace HuaQuant.TradeDatacenter
     {
         private Config config;
         private GlobalJob gJob;
-        private JobSchedule.JobSchedule jobSche;
+        private JobSchedule jobSche;
         public MainForm()
         {
             InitializeComponent();
@@ -63,7 +63,7 @@ namespace HuaQuant.TradeDatacenter
 
         private void BtnStart_Click(object sender, EventArgs e)
         {
-            this.jobSche = new JobSchedule.JobSchedule();
+            this.jobSche = new JobSchedule();
             //this.jobSche.ProcessNumPerJob = 2;
             gJob = new GlobalJob(config,this.jobSche);
             DateTime curDay = DateTime.Today;
@@ -77,7 +77,7 @@ namespace HuaQuant.TradeDatacenter
 
         private void btnStop_Click(object sender, EventArgs e)
         {
-            if (jobSche != null) jobSche.Stop();
+            if (jobSche != null) jobSche.Stop(true);
         }
 
         private void BtnDisplay_Click(object sender, EventArgs e)
@@ -89,7 +89,7 @@ namespace HuaQuant.TradeDatacenter
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             Console.WriteLine("中止所有作业执行,请等待......");
-            if (jobSche!=null) jobSche.Stop();
+            if (jobSche!=null) jobSche.Stop(true);
             Console.Out.Close();
         }
     }
